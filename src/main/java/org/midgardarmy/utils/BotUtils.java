@@ -29,7 +29,7 @@ public class BotUtils {
     }
 
     // Helper functions to make certain aspects of the bot easier to use.
-    public static void sendMessage(IChannel channel, String message){
+    public static void sendRawMessage(IChannel channel, String message){
 
         RequestBuffer.request(() -> {
             try{
@@ -41,7 +41,7 @@ public class BotUtils {
 
     }
 
-    public static void sendMessage(IChannel channel, EmbedObject message){
+    public static void sendEmbeddedMessage(IChannel channel, EmbedObject message){
 
         RequestBuffer.request(() -> {
             try{

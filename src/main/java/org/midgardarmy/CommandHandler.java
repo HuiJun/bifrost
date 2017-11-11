@@ -28,7 +28,7 @@ public class CommandHandler {
 
             String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
             String response = ROChargenURLGen.generateSig(charName);
-            BotUtils.sendMessage(event.getChannel(), response);
+            BotUtils.sendRawMessage(event.getChannel(), response);
 
         });
 
@@ -39,12 +39,12 @@ public class CommandHandler {
             if (!Character.isDigit(itemName.charAt(0))) {
                 responses = DivinePrideClient.getByName("i", itemName);
                 for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
+                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
                 }
             } else {
                 responses = DivinePrideClient.getById("i", args);
                 for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
+                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
                 }
             }
         });
@@ -56,12 +56,12 @@ public class CommandHandler {
             if (!Character.isDigit(monsterName.charAt(0))) {
                 responses = DivinePrideClient.getByName("m", monsterName);
                 for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
+                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
                 }
             } else {
                 responses = DivinePrideClient.getById("m", args);
                 for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
+                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
                 }
             }
         });

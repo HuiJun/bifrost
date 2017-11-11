@@ -12,7 +12,7 @@ public class ItemTemplate extends BaseTemplate {
 
     static {
         replacements.clear();
-        replacements.put("\\^[0-9a-fA-F]{6}", "");
+        replacements.put("_?\\^[0-9a-fA-F]{6}", "");
     }
 
     public static EmbedBuilder apply(JsonNode json) {
@@ -24,7 +24,13 @@ public class ItemTemplate extends BaseTemplate {
         }
 
         builder.withColor(0, 0, 255);
-        builder.withThumbnail(String.format("http://divine-pride.net/img/items/collection/iRO/%d", root.getInt("id")));
+
+        String thumbnail = String.format("http://divine-pride.net/img/items/collection/iRO/%d", root.getInt("id"));
+        if (isCard(root)) {
+            thumbnail = String.format("https://static.divine-pride.net/images/items/cards/%d.png", root.getInt("id"));
+        }
+
+        builder.withThumbnail(thumbnail);
 
         builder.withAuthorName("DivinePride.net");
         builder.withAuthorIcon("https://static.divine-pride.net/images/logo.png");
@@ -38,6 +44,14 @@ public class ItemTemplate extends BaseTemplate {
         builder.withFooterIcon(String.format("http://www.divine-pride.net/img/items/item/iRO/%d", root.getInt("id")));
 
         return builder;
+    }
+
+    private static boolean isCard(JSONObject json) {
+        String aegisName = json.getString("aegisName");
+        if(aegisName.substring(aegisName.length() - 4).equalsIgnoreCase("CARD")) {
+            return true;
+        }
+        return false;
     }
 
     private ItemTemplate() {}

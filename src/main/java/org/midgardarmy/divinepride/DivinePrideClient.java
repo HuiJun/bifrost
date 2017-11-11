@@ -31,13 +31,13 @@ public class DivinePrideClient {
 
     private static final Logger logger = LoggerFactory.getLogger(DivinePrideClient.class);
 
-    private static final String DIVINE_PRIDE_API_KEY = ConfigUtils.get("divinepride.apiKey");
-    private static final String BASEURL = "https://www.divine-pride.net/";
+    public static final String DIVINE_PRIDE_API_KEY = ConfigUtils.get("divinepride.apiKey");
+    public static final String BASEURL = "https://www.divine-pride.net/";
 
-    private static final String API = "api/database/";
-    private static final String SEARCH = "database/";
+    public static final String API = "api/database/";
+    public static final String SEARCH = "database/";
 
-    private static final Map<String, String> ENDPOINTMAP;
+    public static final Map<String, String> ENDPOINTMAP;
     static {
         ENDPOINTMAP = new HashMap<>();
         ENDPOINTMAP.put("e", "Experience");
@@ -126,7 +126,7 @@ public class DivinePrideClient {
                 .asString();
     }
 
-    private static HttpResponse<JsonNode> apiCall(String url) throws UnirestException {
+    public static HttpResponse<JsonNode> apiCall(String url) throws UnirestException {
         return Unirest.get(url)
                 .header("accept", "application/json")
                 .queryString("apiKey", DIVINE_PRIDE_API_KEY)
