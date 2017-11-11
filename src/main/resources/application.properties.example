@@ -1,0 +1,19 @@
+##################
+# Discord Config #
+##################
+discord.bot.token=
+discord.bot.prefix=
+
+####################
+# ROChargen Config #
+####################
+rochargen.url=
+rochargen.bg.min=
+rochargen.bg.max=
+rochargen.pos.min=
+rochargen.pos.max=
+
+######################
+# DivinePride Config #
+######################
+divinepride.apiKey=
