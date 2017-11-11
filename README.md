@@ -1,5 +1,5 @@
 # bifrost
-Discord app for MidgardArmy Guild on NovaRO.
+Discord Plugin for Ragnarok Online related tools
 
 ## How to run
 
