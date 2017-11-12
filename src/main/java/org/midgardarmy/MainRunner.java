@@ -2,6 +2,7 @@ package org.midgardarmy;
 
 import org.midgardarmy.utils.BotUtils;
 import org.midgardarmy.utils.ConfigUtils;
+import org.midgardarmy.utils.DataUtils;
 import sx.blah.discord.api.IDiscordClient;
 
 public class MainRunner {
@@ -15,6 +16,7 @@ public class MainRunner {
             token = args[0];
         }
 
+        DataUtils.load();
         IDiscordClient cli = BotUtils.getBuiltDiscordClient(token);
 
         // Register a listener via the EventSubscriber annotation which allows for organisation and delegation of events

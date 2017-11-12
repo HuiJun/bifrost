@@ -6,10 +6,12 @@ import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.midgardarmy.divinepride.DivinePrideClient;
+import org.midgardarmy.utils.DataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.util.EmbedBuilder;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +21,14 @@ import java.util.Map;
 public class MonsterTemplate extends BaseTemplate {
 
     private static final Logger logger = LoggerFactory.getLogger(MonsterTemplate.class);
+
+    private static final Map<String, Float> rates;
+    static {
+        rates = new HashMap<>();
+        rates.put("baseexp", 25f);
+        rates.put("jobexp", 25f);
+        rates.put("drop", 10f);
+    }
 
     private static final Map<Integer, String> raceMap;
     static {
@@ -84,24 +94,42 @@ public class MonsterTemplate extends BaseTemplate {
 
         JSONObject stats = root.optJSONObject("stats");
         JSONArray dropsArr = root.optJSONArray("drops");
-        List<JsonNode> drops = getDrops(dropsArr);
         JSONArray spawnArr = root.optJSONArray("spawn");
 
         StringBuilder dropList = new StringBuilder();
-        for (int i = 0; i < drops.size(); i++) {
-            JsonNode drop = drops.get(i);
-            JSONObject dropObj = drop.getObject();
-            JSONObject dropContext = dropsArr.optJSONObject(i);
-            String dropChance = Integer.toString(dropContext.optInt("chance") / 100);
-            dropList.append(String.format("%s (%d) - %s%%", dropObj.optString("name"), dropObj.optInt("id"), dropChance));
-            dropList.append(String.format("%n"));
+        if (dropsArr != null) {
+            List<Integer> ids = new ArrayList<>();
+            Map<Integer, Integer> dropChanceMap = new HashMap<>();
+            for (int i = 0; i < dropsArr.length(); i++) {
+                JSONObject current = dropsArr.getJSONObject(i);
+                Integer itemId = current.getInt("itemId");
+                ids.add(itemId);
+                dropChanceMap.put(itemId, current.optInt("chance"));
+            }
+
+            Map<Integer, Map<String, Object>> items = DataUtils.getItemsByIDs(ids);
+            for (Map.Entry<Integer, Map<String, Object>> entry : items.entrySet()) {
+                Integer itemId = entry.getKey();
+                Map<String, Object> item = entry.getValue();
+                String dropChance = Float.toString(roundDecimal(modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100f)));
+                dropList.append(String.format("%s (%d) - %s%%", item.getOrDefault("name", "Unknown"), itemId, dropChance));
+                dropList.append(String.format("%n"));
+            }
+
+            ids.removeAll(items.keySet());
+            if (!ids.isEmpty() && logger.isDebugEnabled()) {
+                String idsString = ids.toString().substring(1, ids.toString().length() - 1);
+                logger.debug(String.format("Could not find some elements : %s", String.join("", idsString)));
+            }
         }
 
         StringBuilder spawnList = new StringBuilder();
-        for (int i = 0; i < spawnArr.length(); i++) {
-            JSONObject spawn = spawnArr.getJSONObject(i);
-            spawnList.append(String.format("%s (%d)", spawn.getString("mapname"), spawn.getInt("amount")));
-            spawnList.append(String.format("%n"));
+        if (spawnArr != null) {
+            for (int i = 0; i < spawnArr.length(); i++) {
+                JSONObject spawn = spawnArr.getJSONObject(i);
+                spawnList.append(String.format("%s (%d)", spawn.getString("mapname"), spawn.getInt("amount")));
+                spawnList.append(String.format("%n"));
+            }
         }
 
         builder.withColor(255, 0, 0);
@@ -117,8 +145,8 @@ public class MonsterTemplate extends BaseTemplate {
         builder.appendField("Level", Integer.toString(stats.getInt("level")), true);
 
         builder.appendField("Health", Integer.toString(stats.getInt("health")), true);
-        builder.appendField("Base Exp", Integer.toString(stats.getInt("baseExperience")), true);
-        builder.appendField("Job Exp", Integer.toString(stats.getInt("jobExperience")), true);
+        builder.appendField("Base Exp", Integer.toString(modifyBaseExp(stats.getInt("baseExperience"))), true);
+        builder.appendField("Job Exp", Integer.toString(modifyJobExp(stats.getInt("jobExperience"))), true);
 
         builder.appendField("STR", Integer.toString(stats.getInt("str")), true);
         builder.appendField("AGI", Integer.toString(stats.getInt("agi")), true);
@@ -130,8 +158,10 @@ public class MonsterTemplate extends BaseTemplate {
         builder.appendField("ATK", String.format("%d - %d", stats.getJSONObject("attack").getInt("minimum"), stats.getJSONObject("attack").getInt("maximum")), true);
         builder.appendField("DEF", Integer.toString(stats.getInt("defense")), true);
         builder.appendField("MDEF", Integer.toString(stats.getInt("magicDefense")), true);
-        builder.appendField("ASPD", Integer.toString(stats.getInt("attackSpeed")), true);
         builder.appendField("HIT", Integer.toString(stats.getInt("hit")), true);
+
+        builder.appendField("ASPD", Float.toString(calculateASPD(stats.getInt("attackSpeed"))), true);
+        builder.appendField("Hits / Sec", Float.toString(calculateHPS(stats.getInt("attackSpeed"))), true);
 
         builder.appendField("Race", raceMap.getOrDefault(stats.getInt("race"), "Unknown"), true);
         builder.appendField("Size", sizeMap.getOrDefault(stats.getInt("scale"), "Unknown"), true);
@@ -161,6 +191,33 @@ public class MonsterTemplate extends BaseTemplate {
             }
         }
         return results;
+    }
+
+    private static float calculateHPS(int delay) {
+        return roundDecimal(1000f / delay);
+    }
+
+    private static float calculateASPD(int delay) {
+        return roundDecimal(50f / (delay / 1000f));
+    }
+
+    private static float roundDecimal(float num) {
+        BigDecimal bd = new BigDecimal(Float.toString(num));
+        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+        return bd.floatValue();
+    }
+
+    private static float modifyDropRate(float base) {
+        float mod = base * rates.get("drop");
+        return mod <= 100f ? mod : 100.00f;
+    }
+
+    private static Integer modifyBaseExp(int base) {
+        return Math.round(base * rates.get("baseexp"));
+    }
+
+    private static Integer modifyJobExp(int base) {
+        return Math.round(base * rates.get("jobexp"));
     }
 
     private MonsterTemplate() {}
