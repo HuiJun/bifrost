@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.midgardarmy.utils.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.events.EventSubscriber;
@@ -15,12 +16,25 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 import org.midgardarmy.divinepride.DivinePrideClient;
 import org.midgardarmy.rochargen.ROChargenURLGen;
 import org.midgardarmy.utils.BotUtils;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.util.EmbedBuilder;
 
 public class CommandHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
 
     private static Map<String, Command> commandMap = new HashMap<>();
+    private static Map<Long, IMessage> processingMap = new HashMap<>();
+    private static EmbedBuilder processingMessage;
+    static {
+        processingMessage = new EmbedBuilder();
+        String processingUrl = ConfigUtils.get("discord.bot.processing");
+        if (!processingUrl.isEmpty()) {
+            processingMessage.withImage(ConfigUtils.get("discord.bot.processing"));
+        } else {
+            processingMessage.withDescription("Processing...");
+        }
+    }
 
     static {
 
@@ -28,7 +42,9 @@ public class CommandHandler {
 
             String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
             String response = ROChargenURLGen.generateSig(charName);
-            BotUtils.sendRawMessage(event.getChannel(), response);
+            processingMap.get(event.getMessageID()).delete();
+            processingMap.remove(event.getMessageID());
+            BotUtils.sendMessage(event.getChannel(), response);
 
         });
 
@@ -38,14 +54,13 @@ public class CommandHandler {
             List<EmbedObject> responses;
             if (!Character.isDigit(itemName.charAt(0))) {
                 responses = DivinePrideClient.getByName("i", itemName);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
-                }
             } else {
                 responses = DivinePrideClient.getById("i", args);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
-                }
+            }
+            processingMap.get(event.getMessageID()).delete();
+            processingMap.remove(event.getMessageID());
+            for (EmbedObject response : responses) {
+                BotUtils.sendMessage(event.getChannel(), response);
             }
         });
 
@@ -55,14 +70,13 @@ public class CommandHandler {
             List<EmbedObject> responses;
             if (!Character.isDigit(monsterName.charAt(0))) {
                 responses = DivinePrideClient.getByName("m", monsterName);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
-                }
             } else {
                 responses = DivinePrideClient.getById("m", args);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendEmbeddedMessage(event.getChannel(), response);
-                }
+            }
+            processingMap.get(event.getMessageID()).delete();
+            processingMap.remove(event.getMessageID());
+            for (EmbedObject response : responses) {
+                BotUtils.sendMessage(event.getChannel(), response);
             }
         });
     }
@@ -85,7 +99,8 @@ public class CommandHandler {
         argsList.remove(0);
 
         if (commandMap.containsKey(commandStr)) {
-            //IMessage initial = event.getChannel().sendMessage("Processing...");
+            IMessage initial = event.getChannel().sendMessage(processingMessage.build());
+            processingMap.put(event.getMessageID(), initial);
             commandMap.get(commandStr).runCommand(event, argsList);
         }
 

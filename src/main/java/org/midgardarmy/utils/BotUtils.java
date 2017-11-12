@@ -28,26 +28,19 @@ public class BotUtils {
 
     }
 
-    // Helper functions to make certain aspects of the bot easier to use.
-    public static void sendRawMessage(IChannel channel, String message){
+    public static void sendMessage(IChannel channel, Object message){
 
         RequestBuffer.request(() -> {
             try{
-                channel.sendMessage(message);
+                if (message instanceof EmbedObject) {
+                    channel.sendMessage((EmbedObject) message);
+                } else {
+                    channel.sendMessage((String) message);
+                }
             } catch (DiscordException e){
-                logger.debug("Message could not be sent with error: ", e);
-            }
-        });
-
-    }
-
-    public static void sendEmbeddedMessage(IChannel channel, EmbedObject message){
-
-        RequestBuffer.request(() -> {
-            try{
-                channel.sendMessage(message);
-            } catch (DiscordException e){
-                logger.debug("Message could not be sent with error: ", e);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Message could not be sent with error: ", e);
+                }
             }
         });
 

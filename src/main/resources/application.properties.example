@@ -3,6 +3,7 @@
 ##################
 discord.bot.token=
 discord.bot.prefix=
+discord.bot.processing=
 
 ####################
 # ROChargen Config #

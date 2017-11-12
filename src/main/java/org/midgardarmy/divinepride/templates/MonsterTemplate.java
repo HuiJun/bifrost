@@ -2,7 +2,6 @@ package org.midgardarmy.divinepride.templates;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
-import com.sun.org.apache.xpath.internal.operations.Div;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,17 +10,78 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.util.EmbedBuilder;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MonsterTemplate extends BaseTemplate {
 
     private static final Logger logger = LoggerFactory.getLogger(MonsterTemplate.class);
 
+    private static final Map<Integer, String> raceMap;
+    static {
+        raceMap = new HashMap<>();
+        raceMap.put(0, "Formless");
+        raceMap.put(1, "Undead");
+        raceMap.put(2, "Brute");
+        raceMap.put(3, "Plant");
+        raceMap.put(4, "Insect");
+        raceMap.put(5, "Fish");
+        raceMap.put(6, "Demon");
+        raceMap.put(7, "Demi-Human");
+        raceMap.put(8, "Angel");
+        raceMap.put(9, "Dragon");
+        raceMap.put(10, "Player (default race for player)");
+    }
+
+    private static final Map<Integer, String> sizeMap;
+    static {
+        sizeMap = new HashMap<>();
+        sizeMap.put(0, "Small");
+        sizeMap.put(1, "Medium");
+        sizeMap.put(2, "Large");
+    }
+
+    private static final Map<Integer, String> elementMap;
+    static {
+        List<Integer> levels = Arrays.asList(
+                20,
+                40,
+                60,
+                80
+        );
+        List<String> elements = Arrays.asList(
+                "Neutral",
+                "Water",
+                "Earth",
+                "Fire",
+                "Wind",
+                "Poison",
+                "Holy",
+                "Shadow",
+                "Ghost",
+                "Undead"
+        );
+        elementMap = new HashMap<>();
+        for (int i = 0; i < levels.size(); i++) {
+            Integer level = levels.get(i);
+            for (int j = 0; j < elements.size(); j++) {
+                elementMap.put(level + j, String.format("%s (Level %d)", elements.get(j), i + 1));
+            }
+        }
+        elementMap.put(0, "Small");
+    }
+
     public static EmbedBuilder apply(JsonNode json) {
         EmbedBuilder builder = new EmbedBuilder();
         JSONObject root = json.getObject();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(json.toString());
+        }
+
         JSONObject stats = root.optJSONObject("stats");
         JSONArray dropsArr = root.optJSONArray("drops");
         List<JsonNode> drops = getDrops(dropsArr);
@@ -42,10 +102,6 @@ public class MonsterTemplate extends BaseTemplate {
             JSONObject spawn = spawnArr.getJSONObject(i);
             spawnList.append(String.format("%s (%d)", spawn.getString("mapname"), spawn.getInt("amount")));
             spawnList.append(String.format("%n"));
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(json.toString());
         }
 
         builder.withColor(255, 0, 0);
@@ -76,6 +132,12 @@ public class MonsterTemplate extends BaseTemplate {
         builder.appendField("MDEF", Integer.toString(stats.getInt("magicDefense")), true);
         builder.appendField("ASPD", Integer.toString(stats.getInt("attackSpeed")), true);
         builder.appendField("HIT", Integer.toString(stats.getInt("hit")), true);
+
+        builder.appendField("Race", raceMap.getOrDefault(stats.getInt("race"), "Unknown"), true);
+        builder.appendField("Size", sizeMap.getOrDefault(stats.getInt("scale"), "Unknown"), true);
+
+        builder.appendField("Element", elementMap.getOrDefault(stats.getInt("element"), "Unknown"), true);
+
         builder.appendField("Drops", dropList.toString(), false);
         builder.appendField("Maps", spawnList.toString(), false);
 

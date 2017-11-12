@@ -75,7 +75,9 @@ public class DivinePrideClient {
             List<String> ids = extractIDs(xmlDocument);
             return getById(action, ids);
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
         }
         return resultList;
     }
@@ -93,7 +95,9 @@ public class DivinePrideClient {
                 EmbedBuilder object = (EmbedBuilder) method.invoke(null, results.getBody());
                 resultList.add(object.build());
             } catch (Exception e) {
-                logger.debug(e.getMessage());
+                if (logger.isDebugEnabled()) {
+                    logger.debug(e.getLocalizedMessage());
+                }
             }
         }
         if (resultList.isEmpty()) {
@@ -114,7 +118,9 @@ public class DivinePrideClient {
                 result.add(extractIDString(nodes.item(i).getNodeValue()));
             }
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
         }
 
         return result;
