@@ -79,6 +79,22 @@ public class CommandHandler {
                 BotUtils.sendMessage(event.getChannel(), response);
             }
         });
+
+        commandMap.put("map", (event, args) -> {
+
+            String mapName = args.isEmpty() ? "prontera" : String.join(" ", args);
+            List<EmbedObject> responses;
+            if (!Character.isDigit(mapName.charAt(0))) {
+                responses = DivinePrideClient.getByName("m", mapName);
+            } else {
+                responses = DivinePrideClient.getById("m", args);
+            }
+            processingMap.get(event.getMessageID()).delete();
+            processingMap.remove(event.getMessageID());
+            for (EmbedObject response : responses) {
+                BotUtils.sendMessage(event.getChannel(), response);
+            }
+        });
     }
 
     @EventSubscriber
