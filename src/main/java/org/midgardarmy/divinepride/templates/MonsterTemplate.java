@@ -103,23 +103,27 @@ public class MonsterTemplate extends BaseTemplate {
             for (int i = 0; i < dropsArr.length(); i++) {
                 JSONObject current = dropsArr.getJSONObject(i);
                 Integer itemId = current.getInt("itemId");
-                ids.add(itemId);
-                dropChanceMap.put(itemId, current.optInt("chance"));
+                if (current.optInt("chance") > 0) {
+                    ids.add(itemId);
+                    dropChanceMap.put(itemId, current.optInt("chance"));
+                }
             }
 
-            Map<Integer, Map<String, Object>> items = DataUtils.getItemsByIDs(ids);
-            for (Map.Entry<Integer, Map<String, Object>> entry : items.entrySet()) {
-                Integer itemId = entry.getKey();
-                Map<String, Object> item = entry.getValue();
-                String dropChance = Float.toString(roundDecimal(modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100f)));
-                dropList.append(String.format("%s (%d) - %s%%", item.getOrDefault("name", "Unknown"), itemId, dropChance));
-                dropList.append(String.format("%n"));
-            }
+            if (!ids.isEmpty()) {
+                Map<Integer, Map<String, Object>> items = DataUtils.getItemsByIDs(ids);
+                for (Map.Entry<Integer, Map<String, Object>> entry : items.entrySet()) {
+                    Integer itemId = entry.getKey();
+                    Map<String, Object> item = entry.getValue();
+                    String dropChance = Float.toString(roundDecimal(modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100f)));
+                    dropList.append(String.format("%s (%d) - %s%%", item.getOrDefault("name", "Unknown"), itemId, dropChance));
+                    dropList.append(String.format("%n"));
+                }
 
-            ids.removeAll(items.keySet());
-            if (!ids.isEmpty() && logger.isDebugEnabled()) {
-                String idsString = ids.toString().substring(1, ids.toString().length() - 1);
-                logger.debug(String.format("Could not find some elements : %s", String.join("", idsString)));
+                ids.removeAll(items.keySet());
+                if (!ids.isEmpty() && logger.isDebugEnabled()) {
+                    String idsString = ids.toString().substring(1, ids.toString().length() - 1);
+                    logger.debug(String.format("Could not find some elements : %s", String.join("", idsString)));
+                }
             }
         }
 
@@ -168,8 +172,12 @@ public class MonsterTemplate extends BaseTemplate {
 
         builder.appendField("Element", elementMap.getOrDefault(stats.getInt("element"), "Unknown"), true);
 
-        builder.appendField("Drops", dropList.toString(), false);
-        builder.appendField("Maps", spawnList.toString(), false);
+        if (dropList.length() > 0) {
+            builder.appendField("Drops", dropList.toString(), false);
+        }
+        if (spawnList.length() > 0) {
+            builder.appendField("Maps", spawnList.toString(), false);
+        }
 
         return builder;
     }

@@ -76,7 +76,7 @@ public class DivinePrideClient {
             return getById(action, ids);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
-                logger.debug(e.getLocalizedMessage());
+                logger.debug("getByName Error: " + e.getLocalizedMessage());
             }
         }
         return resultList;
@@ -92,11 +92,15 @@ public class DivinePrideClient {
                 HttpResponse<JsonNode> results = apiCall(b.toString());
                 Class clazz = Class.forName("org.midgardarmy.divinepride.templates." + ENDPOINTMAP.get(action) + "Template");
                 Method method = clazz.getMethod("apply", JsonNode.class);
-                EmbedBuilder object = (EmbedBuilder) method.invoke(null, results.getBody());
+                EmbedBuilder object = new EmbedBuilder();
+                logger.debug(results.getBody().toString());
+                if (results.getBody() != null) {
+                    object = (EmbedBuilder) method.invoke(null, results.getBody());
+                }
                 resultList.add(object.build());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(e.getLocalizedMessage());
+                    logger.debug("getById: ", e);
                 }
             }
         }
@@ -119,7 +123,7 @@ public class DivinePrideClient {
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
-                logger.debug(e.getLocalizedMessage());
+                logger.debug("extractIDs Error: " + e.getLocalizedMessage());
             }
         }
 
