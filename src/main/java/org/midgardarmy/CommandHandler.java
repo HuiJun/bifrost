@@ -113,8 +113,8 @@ public class CommandHandler {
         argsList.remove(0);
 
         if (commandMap.containsKey(commandStr)) {
-            IMessage initial = event.getChannel().sendMessage(processingMessage.build());
-            if (commandStr.contains("sig")) {
+            if (!commandStr.contains("sig")) {
+                IMessage initial = event.getChannel().sendMessage(processingMessage.build());
                 processingMap.put(event.getMessageID(), initial);
             }
             commandMap.get(commandStr).runCommand(event, argsList);
