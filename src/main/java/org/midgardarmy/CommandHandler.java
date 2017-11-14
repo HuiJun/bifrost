@@ -42,8 +42,6 @@ public class CommandHandler {
 
             String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
             EmbedObject response = ROChargenURLGen.generateSig(charName);
-            processingMap.get(event.getMessageID()).delete();
-            processingMap.remove(event.getMessageID());
             BotUtils.sendMessage(event.getChannel(), response);
 
         });
@@ -116,7 +114,9 @@ public class CommandHandler {
 
         if (commandMap.containsKey(commandStr)) {
             IMessage initial = event.getChannel().sendMessage(processingMessage.build());
-            processingMap.put(event.getMessageID(), initial);
+            if (!commandStr.equals("sig")) {
+                processingMap.put(event.getMessageID(), initial);
+            }
             commandMap.get(commandStr).runCommand(event, argsList);
         }
 
