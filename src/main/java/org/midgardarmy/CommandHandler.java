@@ -41,7 +41,7 @@ public class CommandHandler {
         commandMap.put("sig", (event, args) -> {
 
             String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
-            String response = ROChargenURLGen.generateSig(charName);
+            EmbedObject response = ROChargenURLGen.generateSig(charName);
             processingMap.get(event.getMessageID()).delete();
             processingMap.remove(event.getMessageID());
             BotUtils.sendMessage(event.getChannel(), response);

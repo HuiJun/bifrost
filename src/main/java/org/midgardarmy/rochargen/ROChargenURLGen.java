@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.midgardarmy.utils.ConfigUtils;
+import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import sx.blah.discord.util.EmbedBuilder;
 
 public class ROChargenURLGen {
 
@@ -21,17 +23,21 @@ public class ROChargenURLGen {
     private static final int POS_MIN = Integer.parseInt(ConfigUtils.get("rochargen.pos.min"));
     private static final int POS_MAX = Integer.parseInt(ConfigUtils.get("rochargen.pos.max"));
 
-    public static String generateSig(String charName) {
+    public static EmbedObject generateSig(String charName) {
         Random rand = new Random();
         int bgID = rand.nextInt(BG_MAX) + BG_MIN;
         int posID = rand.nextInt(POS_MAX) + POS_MIN;
         return generateSig(charName, bgID, posID);
     }
 
-    private static String generateSig(String charName, int bgID, int posID) {
+    private static EmbedObject generateSig(String charName, int bgID, int posID) {
         try {
             URIBuilder b = new URIBuilder(String.format(BASEURL, encodeURIComponent(charName), bgID, posID));
-            return b.toString();
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.withColor(0, 255, 0);
+            builder.withDescription(b.toString());
+            builder.withImage(b.toString());
+            return builder.build();
         } catch (URISyntaxException e) {
             logger.debug(e.getLocalizedMessage());
         }

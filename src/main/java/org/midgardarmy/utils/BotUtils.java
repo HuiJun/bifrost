@@ -6,6 +6,7 @@ import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.RequestBuffer;
 
@@ -36,6 +37,24 @@ public class BotUtils {
                     channel.sendMessage((EmbedObject) message);
                 } else {
                     channel.sendMessage((String) message);
+                }
+            } catch (DiscordException e){
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Message could not be sent with error: ", e);
+                }
+            }
+        });
+
+    }
+
+    public static void sendReply(IMessage initial, Object message){
+
+        RequestBuffer.request(() -> {
+            try{
+                if (message instanceof EmbedObject) {
+                    initial.reply("", (EmbedObject) message);
+                } else {
+                    initial.reply((String) message);
                 }
             } catch (DiscordException e){
                 if (logger.isDebugEnabled()) {

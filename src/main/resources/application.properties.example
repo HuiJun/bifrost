@@ -18,3 +18,9 @@ rochargen.pos.max=
 # DivinePride Config #
 ######################
 divinepride.apiKey=
+
+########################
+# NovaRO Market Config #
+########################
+novaro.user=
+novaro.pass=
