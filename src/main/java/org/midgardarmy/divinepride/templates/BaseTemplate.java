@@ -19,4 +19,7 @@ public class BaseTemplate {
         });
         return result.toString();
     }
+
+    BaseTemplate() {}
+
 }

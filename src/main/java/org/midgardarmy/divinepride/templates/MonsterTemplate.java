@@ -6,6 +6,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.midgardarmy.divinepride.DivinePrideClient;
+import org.midgardarmy.utils.ConfigUtils;
 import org.midgardarmy.utils.DataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,9 @@ public class MonsterTemplate extends BaseTemplate {
     private static final Map<String, Float> rates;
     static {
         rates = new HashMap<>();
-        rates.put("baseexp", 25f);
-        rates.put("jobexp", 25f);
-        rates.put("drop", 10f);
+        rates.put("baseexp", Float.parseFloat(ConfigUtils.get("divinepride.baseexp")));
+        rates.put("jobexp", Float.parseFloat(ConfigUtils.get("divinepride.jobexp")));
+        rates.put("drop", Float.parseFloat(ConfigUtils.get("divinepride.drop")));
     }
 
     private static final Map<Integer, String> raceMap;
@@ -229,4 +230,5 @@ public class MonsterTemplate extends BaseTemplate {
     }
 
     private MonsterTemplate() {}
+
 }

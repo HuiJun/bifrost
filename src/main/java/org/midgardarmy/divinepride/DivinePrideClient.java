@@ -148,4 +148,7 @@ public class DivinePrideClient {
     private static String extractIDString(String str) {
         return str.split("/")[3];
     }
+
+    private DivinePrideClient() {}
+
 }

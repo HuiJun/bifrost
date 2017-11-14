@@ -64,4 +64,7 @@ public class BotUtils {
         });
 
     }
+
+    private BotUtils() {}
+
 }

@@ -5,7 +5,6 @@ import org.h2.tools.RunScript;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,10 +25,6 @@ public class DataUtils {
     private static final String DB_CONNECTION = "jdbc:h2:mem:test;MODE=MySQL";
 
     private static Connection conn = null;
-
-    public static void main(String[] args) {
-        load();
-    }
 
     public static void load() {
         getConn();
@@ -107,4 +102,7 @@ public class DataUtils {
 
         return results;
     }
+
+    private DataUtils() {}
+
 }

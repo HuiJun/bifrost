@@ -45,4 +45,7 @@ public class ConfigUtils {
         }
         ConfigUtils.properties.setProperty(key, value);
     }
+
+    private ConfigUtils() {}
+
 }

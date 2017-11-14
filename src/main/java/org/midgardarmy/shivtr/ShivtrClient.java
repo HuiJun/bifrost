@@ -15,4 +15,7 @@ public class ShivtrClient {
                 .routeParam("apiKey", SHIVTR_API_KEY)
                 .asJson();
     }
+
+    private ShivtrClient() {}
+
 }

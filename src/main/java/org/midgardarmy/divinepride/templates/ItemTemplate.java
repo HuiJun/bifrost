@@ -55,4 +55,5 @@ public class ItemTemplate extends BaseTemplate {
     }
 
     private ItemTemplate() {}
+
 }

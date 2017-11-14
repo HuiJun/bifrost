@@ -62,7 +62,6 @@ public class ROChargenURLGen {
         return result;
     }
 
-    private ROChargenURLGen() {
-        // do nothing
-    }
+    private ROChargenURLGen() {}
+
 }

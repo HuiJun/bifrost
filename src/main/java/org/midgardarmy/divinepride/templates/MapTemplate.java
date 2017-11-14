@@ -70,4 +70,5 @@ public class MapTemplate extends BaseTemplate {
     }
 
     private MapTemplate() {}
+
 }
