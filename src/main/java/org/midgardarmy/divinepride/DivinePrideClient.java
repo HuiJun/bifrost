@@ -91,9 +91,11 @@ public class DivinePrideClient {
                 b.setPath(API + actionParam + ((id != null) ? "/" + id : ""));
                 HttpResponse<JsonNode> results = apiCall(b.toString());
                 Class clazz = Class.forName("org.midgardarmy.divinepride.templates." + ENDPOINTMAP.get(action) + "Template");
+
+                @SuppressWarnings("unchecked")
                 Method method = clazz.getMethod("apply", JsonNode.class);
+
                 EmbedBuilder object = new EmbedBuilder();
-                logger.debug(results.getBody().toString());
                 if (results.getBody() != null) {
                     object = (EmbedBuilder) method.invoke(null, results.getBody());
                 }
