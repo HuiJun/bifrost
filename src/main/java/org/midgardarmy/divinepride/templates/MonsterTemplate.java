@@ -15,9 +15,11 @@ import sx.blah.discord.util.EmbedBuilder;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class MonsterTemplate extends BaseTemplate {
 
@@ -98,6 +100,7 @@ public class MonsterTemplate extends BaseTemplate {
         JSONArray spawnArr = root.optJSONArray("spawn");
 
         StringBuilder dropList = new StringBuilder();
+        Map<String, String> dropMap = new TreeMap<>(Collections.reverseOrder());
         if (dropsArr != null) {
             List<Integer> ids = new ArrayList<>();
             Map<Integer, Integer> dropChanceMap = new HashMap<>();
@@ -115,15 +118,18 @@ public class MonsterTemplate extends BaseTemplate {
                 for (Map.Entry<Integer, Map<String, Object>> entry : items.entrySet()) {
                     Integer itemId = entry.getKey();
                     Map<String, Object> item = entry.getValue();
-                    String dropChance = Float.toString(roundDecimal(modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100f)));
-                    dropList.append(String.format("%s (%d) - %s%%", item.getOrDefault("name", "Unknown"), itemId, dropChance));
-                    dropList.append(String.format("%n"));
+                    String dropChance = String.format("%.2f", modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100.00f));
+                    dropMap.put(dropChance, String.format("%s (%d) - %s%%%n", item.getOrDefault("name", "Unknown"), itemId, dropChance));
                 }
 
                 ids.removeAll(items.keySet());
                 if (!ids.isEmpty() && logger.isDebugEnabled()) {
                     String idsString = ids.toString().substring(1, ids.toString().length() - 1);
                     logger.debug(String.format("Could not find some elements : %s", String.join("", idsString)));
+                }
+
+                for (Map.Entry<String, String> drop : dropMap.entrySet()) {
+                    dropList.append(drop.getValue());
                 }
             }
         }
@@ -165,8 +171,8 @@ public class MonsterTemplate extends BaseTemplate {
         builder.appendField("MDEF", Integer.toString(stats.getInt("magicDefense")), true);
         builder.appendField("HIT", Integer.toString(stats.getInt("hit")), true);
 
-        builder.appendField("ASPD", Float.toString(calculateASPD(stats.getInt("attackSpeed"))), true);
-        builder.appendField("Hits / Sec", Float.toString(calculateHPS(stats.getInt("attackSpeed"))), true);
+        builder.appendField("ASPD", String.format("%.0f", calculateASPD(stats.getInt("attackSpeed"))), true);
+        builder.appendField("Hits / Sec", String.format("%.2f", calculateHPS(stats.getInt("attackSpeed"))), true);
 
         builder.appendField("Race", raceMap.getOrDefault(stats.getInt("race"), "Unknown"), true);
         builder.appendField("Size", sizeMap.getOrDefault(stats.getInt("scale"), "Unknown"), true);
@@ -218,7 +224,7 @@ public class MonsterTemplate extends BaseTemplate {
 
     private static float modifyDropRate(float base) {
         float mod = base * rates.get("drop");
-        return mod <= 100f ? mod : 100.00f;
+        return mod <= 100f ? roundDecimal(mod) : 100.00f;
     }
 
     private static Integer modifyBaseExp(int base) {
