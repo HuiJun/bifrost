@@ -1,10 +1,5 @@
 package org.midgardarmy.utils;
 
-import org.h2.tools.RunScript;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,9 +8,16 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.h2.tools.RunScript;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataUtils {
 
@@ -23,13 +25,20 @@ public class DataUtils {
 
     private static final String DB_DRIVER = "org.h2.Driver";
     private static final String DB_CONNECTION = "jdbc:h2:mem:test;MODE=MySQL";
+    private static final List<String> sqlFiles = new ArrayList<>(Arrays.asList("item_db_re.sql", "event_db.sql"));
 
     private static Connection conn = null;
 
-    public static void load() {
+    public static void loadAll() {
+        for (String sqlFile : sqlFiles) {
+            load(sqlFile);
+        }
+    }
+
+    public static void load(String fileName) {
         getConn();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream resourceAsStream = classLoader.getResourceAsStream("item_db_re.sql");
+        InputStream resourceAsStream = classLoader.getResourceAsStream(fileName);
 
         if (resourceAsStream != null) {
             try (InputStreamReader isr = new InputStreamReader(resourceAsStream)) {
@@ -89,18 +98,54 @@ public class DataUtils {
                 logger.debug(e.getLocalizedMessage());
             }
         } finally {
-            try {
-                if (selectPreparedStatement != null) {
-                    selectPreparedStatement.close();
-                }
-            } catch (SQLException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(e.getLocalizedMessage());
-                }
-            }
+            close(selectPreparedStatement);
         }
 
         return results;
+    }
+
+    public static List<Map<String, Object>> getEvents() {
+        List<Map<String, Object>> results = new ArrayList<>();
+        getConn();
+
+        StringBuilder selectQuery = new StringBuilder();
+        PreparedStatement selectPreparedStatement = null;
+
+        selectQuery.append("SELECT id, name, schedule, start, end FROM event_db WHERE start < NOW() AND (end > NOW() OR end IS NULL)");
+
+        try {
+            selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+            ResultSet rs = selectPreparedStatement.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("id", rs.getInt("id"));
+                result.put("name", rs.getString("name"));
+                result.put("schedule", rs.getString("schedule"));
+                result.put("start", rs.getTimestamp("start"));
+                result.put("end", rs.getTimestamp("end"));
+                results.add(result);
+            }
+        } catch (SQLException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
+        } finally {
+            close(selectPreparedStatement);
+        }
+
+        return results;
+    }
+
+    private static void close(PreparedStatement p) {
+        try {
+            if (p != null) {
+                p.close();
+            }
+        } catch (SQLException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
+        }
     }
 
     private DataUtils() {}

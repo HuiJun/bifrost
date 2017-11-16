@@ -1,5 +1,14 @@
 package org.midgardarmy.divinepride.templates;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import org.apache.http.client.utils.URIBuilder;
@@ -11,15 +20,6 @@ import org.midgardarmy.utils.DataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.util.EmbedBuilder;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class MonsterTemplate extends BaseTemplate {
 
@@ -59,13 +59,13 @@ public class MonsterTemplate extends BaseTemplate {
 
     private static final Map<Integer, String> elementMap;
     static {
-        List<Integer> levels = Arrays.asList(
+        List<Integer> levels = new ArrayList<>(Arrays.asList(
                 20,
                 40,
                 60,
                 80
-        );
-        List<String> elements = Arrays.asList(
+        ));
+        List<String> elements = new ArrayList<>(Arrays.asList(
                 "Neutral",
                 "Water",
                 "Earth",
@@ -76,7 +76,7 @@ public class MonsterTemplate extends BaseTemplate {
                 "Shadow",
                 "Ghost",
                 "Undead"
-        );
+        ));
         elementMap = new HashMap<>();
         for (int i = 0; i < levels.size(); i++) {
             Integer level = levels.get(i);

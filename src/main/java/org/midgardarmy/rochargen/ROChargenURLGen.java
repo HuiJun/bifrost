@@ -9,9 +9,10 @@ import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.midgardarmy.utils.ConfigUtils;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
+
+import org.midgardarmy.utils.ConfigUtils;
 
 public class ROChargenURLGen {
 

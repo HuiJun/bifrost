@@ -23,9 +23,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
 
-import org.midgardarmy.utils.ConfigUtils;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
+
+import org.midgardarmy.utils.ConfigUtils;
 
 public class DivinePrideClient {
 

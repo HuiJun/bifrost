@@ -48,10 +48,7 @@ public class ItemTemplate extends BaseTemplate {
 
     private static boolean isCard(JSONObject json) {
         String aegisName = json.getString("aegisName");
-        if(aegisName.substring(aegisName.length() - 4).equalsIgnoreCase("CARD")) {
-            return true;
-        }
-        return false;
+        return aegisName.substring(aegisName.length() - 4).equalsIgnoreCase("CARD");
     }
 
     private ItemTemplate() {}
