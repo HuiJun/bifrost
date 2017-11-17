@@ -31,12 +31,13 @@ public class CommandHandler {
 
     private static Map<String, Command> commandMap = new HashMap<>();
     private static Map<Long, IMessage> processingMap = new HashMap<>();
-    private static List<String> internalProcesses = new ArrayList<>(Arrays.asList("sig", "help", "events"));
+    private static List<String> internalProcesses = new ArrayList<>(Arrays.asList("sig", "char", "help", "events"));
 
     private static Map<String, List<String>> helpMap = new HashMap<>();
 
     static {
         helpMap.put(String.format("%s%s", BOT_PREFIX, "sig"), new ArrayList<>(Arrays.asList("[name or id]", "If provided, returns a generated signature url for the name provided. Otherwise, uses the display name of the user.")));
+        helpMap.put(String.format("%s%s", BOT_PREFIX, "char"), new ArrayList<>(Arrays.asList("[name or id]", "If provided, returns a generated character url for the name provided. Otherwise, uses the display name of the user.")));
         helpMap.put(String.format("%s%s", BOT_PREFIX, "events"), new ArrayList<>(Arrays.asList("Lists event countdowns.")));
         helpMap.put(String.format("%s%s", BOT_PREFIX, "mi"), new ArrayList<>(Arrays.asList("<name or id>", "Returns information about a mob. Passing a name will return all matching entries.")));
         helpMap.put(String.format("%s%s", BOT_PREFIX, "ii"), new ArrayList<>(Arrays.asList("<name or id>", "Returns information about an item. Passing a name will return all matching entries.")));
@@ -92,6 +93,12 @@ public class CommandHandler {
         commandMap.put("sig", (event, args) -> {
             String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
             EmbedObject response = ROChargenURLGen.generateSig(charName);
+            BotUtils.sendMessage(event.getChannel(), response);
+        });
+
+        commandMap.put("char", (event, args) -> {
+            String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
+            EmbedObject response = ROChargenURLGen.generateChar(charName);
             BotUtils.sendMessage(event.getChannel(), response);
         });
 
@@ -171,7 +178,7 @@ public class CommandHandler {
             processingMap.remove(event.getMessageID());
 
             for (EmbedObject response : responses) {
-                BotUtils.sendMessage(event.getChannel(), response);
+                //BotUtils.sendMessage(event.getChannel(), response);
             }
         });
 
