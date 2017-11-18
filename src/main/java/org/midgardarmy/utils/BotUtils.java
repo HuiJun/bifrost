@@ -15,7 +15,7 @@ public class BotUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(BotUtils.class);
 
-    public static String BOT_PREFIX = ConfigUtils.get("discord.bot.prefix");
+    public static final String BOT_PREFIX = ConfigUtils.get("discord.bot.prefix");
 
     public static IDiscordClient getBuiltDiscordClient(String token){
         return new ClientBuilder()
