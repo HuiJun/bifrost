@@ -115,12 +115,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.googlecode.streamflyer-regex-fast</groupId>
-            <artifactId>streamflyer-regex-fast</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
