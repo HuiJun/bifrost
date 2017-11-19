@@ -1,8 +1,11 @@
 package org.midgardarmy.utils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -24,8 +27,8 @@ public class DataUtils {
     private static final Logger logger = LoggerFactory.getLogger(DataUtils.class);
 
     private static final String DB_DRIVER = "org.h2.Driver";
-    private static final String DB_CONNECTION = "jdbc:h2:mem:test;MODE=MySQL";
-    private static final List<String> sqlFiles = new ArrayList<>(Arrays.asList("item_db_re.sql", "event_db.sql"));
+    private static final String DB_CONNECTION = "jdbc:h2:./bifrost;MODE=MySQL";
+    private static final List<String> sqlFiles = new ArrayList<>(Arrays.asList("data/item_db_re.sql", "data/mob_db_re.sql", "data/event_db.sql"));
 
     private static Connection conn = null;
 
@@ -42,7 +45,19 @@ public class DataUtils {
 
         if (resourceAsStream != null) {
             try (InputStreamReader isr = new InputStreamReader(resourceAsStream)) {
-                RunScript.execute(conn, isr);
+                BufferedReader br = new BufferedReader(isr);
+                StringBuilder builder = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (!line.startsWith("#")) {
+                        builder.append(line
+                                .replaceAll("\\\\'", "''")
+                                .replaceAll("(tiny|small|medium)int", "int")
+                                .replaceAll("text NOT NULL", "varchar(50) NOT NULL DEFAULT ''")
+                        );
+                    }
+                }
+                RunScript.execute(conn, new InputStreamReader(new ByteArrayInputStream(builder.toString().getBytes(StandardCharsets.UTF_8.name()))));
             } catch (Exception e) {
                 logger.debug(e.getLocalizedMessage());
             } finally {
@@ -77,13 +92,19 @@ public class DataUtils {
         getConn();
 
         StringBuilder selectQuery = new StringBuilder();
+        selectQuery.append("SELECT id, name_english, name_japanese, slots FROM item_db_re WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            selectQuery.append("?,");
+        }
+        selectQuery.deleteCharAt(selectQuery.length() - 1);
+        selectQuery.append(")");
         PreparedStatement selectPreparedStatement = null;
-
-        String idsString = ids.toString().substring(1, ids.toString().length() - 1);
-        selectQuery.append(String.format("SELECT id, name_english, name_japanese, slots FROM item_db_re WHERE id IN (%s)", idsString));
 
         try {
             selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+            for (int i = 0; i < ids.size(); i++) {
+                selectPreparedStatement.setInt(i + 1, ids.get(i));
+            }
             ResultSet rs = selectPreparedStatement.executeQuery();
             while (rs.next()) {
                 Map<String, Object> result = new HashMap<>();
@@ -92,6 +113,36 @@ public class DataUtils {
                 result.put("aegisName", rs.getString("name_english"));
                 result.put("slots", rs.getInt("slots"));
                 results.put(rs.getInt("id"), result);
+            }
+        } catch (SQLException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
+        } finally {
+            close(selectPreparedStatement);
+        }
+
+        return results;
+    }
+
+    public static List<Integer> getMobIDsByName(String name) {
+        List<Integer> results = new ArrayList<>();
+        getConn();
+
+        PreparedStatement selectPreparedStatement = null;
+
+        StringBuilder selectQuery = new StringBuilder();
+        selectQuery.append("SELECT ID FROM mob_db_re WHERE LOWER(kName) LIKE ? OR LOWER(iName) LIKE ?");
+
+        try {
+            selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+            selectPreparedStatement.setString(1, String.format("%%%s%%", name.toLowerCase()));
+            selectPreparedStatement.setString(2, String.format("%%%s%%", name.toLowerCase()));
+
+            ResultSet rs = selectPreparedStatement.executeQuery();
+            while (rs.next()) {
+                logger.debug(Integer.toString(rs.getInt("ID")));
+                results.add(rs.getInt("ID"));
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
@@ -148,6 +199,7 @@ public class DataUtils {
         }
     }
 
-    private DataUtils() {}
+    private DataUtils() {
+    }
 
 }

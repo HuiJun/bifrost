@@ -39,6 +39,7 @@ public class CommandHandler {
         helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "events"), new ArrayList<>(Arrays.asList("Lists event countdowns.")));
         helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "mi"), new ArrayList<>(Arrays.asList("<name or id>", "Returns information about a mob. Passing a name will return all matching entries.")));
         helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "ii"), new ArrayList<>(Arrays.asList("<name or id>", "Returns information about an item. Passing a name will return all matching entries.")));
+        helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "ws"), new ArrayList<>(Arrays.asList("<name or id>", "Searches NovaRO Market and returns either search results or vendors selling the item.")));
     }
 
     private static EmbedBuilder processingMessage;

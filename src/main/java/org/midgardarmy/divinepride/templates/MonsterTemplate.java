@@ -138,46 +138,46 @@ public class MonsterTemplate extends BaseTemplate {
         if (spawnArr != null) {
             for (int i = 0; i < spawnArr.length(); i++) {
                 JSONObject spawn = spawnArr.getJSONObject(i);
-                spawnList.append(String.format("%s (%d)", spawn.getString("mapname"), spawn.getInt("amount")));
+                spawnList.append(String.format("%s (%d)", spawn.getString("mapname"), spawn.optInt("amount")));
                 spawnList.append(String.format("%n"));
             }
         }
 
         builder.withColor(255, 0, 0);
-        builder.withThumbnail(String.format("https://static.divine-pride.net/images/mobs/png/%d.png", root.getInt("id")));
+        builder.withThumbnail(String.format("https://static.divine-pride.net/images/mobs/png/%d.png", root.optInt("id")));
 
         builder.withAuthorName("DivinePride.net");
         builder.withAuthorIcon("https://static.divine-pride.net/images/logo.png");
-        builder.withAuthorUrl(String.format("https://www.divine-pride.net/database/monster/%d", root.getInt("id")));
+        builder.withAuthorUrl(String.format("https://www.divine-pride.net/database/monster/%d", root.optInt("id")));
 
-        builder.appendField("ID", Integer.toString(root.getInt("id")), false);
+        builder.appendField("ID", Integer.toString(root.optInt("id")), false);
 
         builder.appendField("Name", root.getString("name"), true);
-        builder.appendField("Level", Integer.toString(stats.getInt("level")), true);
+        builder.appendField("Level", Integer.toString(stats.optInt("level")), true);
 
-        builder.appendField("Health", Integer.toString(stats.getInt("health")), true);
-        builder.appendField("Base Exp", Integer.toString(modifyBaseExp(stats.getInt("baseExperience"))), true);
-        builder.appendField("Job Exp", Integer.toString(modifyJobExp(stats.getInt("jobExperience"))), true);
+        builder.appendField("Health", Integer.toString(stats.optInt("health")), true);
+        builder.appendField("Base Exp", Integer.toString(modifyBaseExp(stats.optInt("baseExperience"))), true);
+        builder.appendField("Job Exp", Integer.toString(modifyJobExp(stats.optInt("jobExperience"))), true);
 
-        builder.appendField("STR", Integer.toString(stats.getInt("str")), true);
-        builder.appendField("AGI", Integer.toString(stats.getInt("agi")), true);
-        builder.appendField("VIT", Integer.toString(stats.getInt("vit")), true);
-        builder.appendField("INT", Integer.toString(stats.getInt("int")), true);
-        builder.appendField("DEX", Integer.toString(stats.getInt("dex")), true);
-        builder.appendField("LUK", Integer.toString(stats.getInt("luk")), true);
+        builder.appendField("STR", Integer.toString(stats.optInt("str")), true);
+        builder.appendField("AGI", Integer.toString(stats.optInt("agi")), true);
+        builder.appendField("VIT", Integer.toString(stats.optInt("vit")), true);
+        builder.appendField("INT", Integer.toString(stats.optInt("int")), true);
+        builder.appendField("DEX", Integer.toString(stats.optInt("dex")), true);
+        builder.appendField("LUK", Integer.toString(stats.optInt("luk")), true);
 
-        builder.appendField("ATK", String.format("%d - %d", stats.getJSONObject("attack").getInt("minimum"), stats.getJSONObject("attack").getInt("maximum")), true);
-        builder.appendField("DEF", Integer.toString(stats.getInt("defense")), true);
-        builder.appendField("MDEF", Integer.toString(stats.getInt("magicDefense")), true);
-        builder.appendField("HIT", Integer.toString(stats.getInt("hit")), true);
+        builder.appendField("ATK", stats.optJSONObject("attack") != null ? String.format("%d - %d", stats.optJSONObject("attack").optInt("minimum"), stats.optJSONObject("attack").getInt("maximum")) : "0", true);
+        builder.appendField("DEF", Integer.toString(stats.optInt("defense")), true);
+        builder.appendField("MDEF", Integer.toString(stats.optInt("magicDefense")), true);
+        builder.appendField("HIT", Integer.toString(stats.optInt("hit")), true);
 
-        builder.appendField("ASPD", String.format("%.0f", calculateASPD(stats.getInt("attackSpeed"))), true);
-        builder.appendField("Hits / Sec", String.format("%.2f", calculateHPS(stats.getInt("attackSpeed"))), true);
+        builder.appendField("ASPD", String.format("%.0f", calculateASPD(stats.optInt("attackSpeed"))), true);
+        builder.appendField("Hits / Sec", String.format("%.2f", calculateHPS(stats.optInt("attackSpeed"))), true);
 
-        builder.appendField("Race", raceMap.getOrDefault(stats.getInt("race"), "Unknown"), true);
-        builder.appendField("Size", sizeMap.getOrDefault(stats.getInt("scale"), "Unknown"), true);
+        builder.appendField("Race", raceMap.getOrDefault(stats.optInt("race"), "Unknown"), true);
+        builder.appendField("Size", sizeMap.getOrDefault(stats.optInt("scale"), "Unknown"), true);
 
-        builder.appendField("Element", elementMap.getOrDefault(stats.getInt("element"), "Unknown"), true);
+        builder.appendField("Element", elementMap.getOrDefault(stats.optInt("element"), "Unknown"), true);
 
         if (dropList.length() > 0) {
             builder.appendField("Drops", dropList.toString(), false);
