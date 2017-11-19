@@ -123,7 +123,7 @@ public class NovaROEvents {
                 sb.append(" hours ");
             }
 
-            if (minutes >= 0 && (days < 1 || hours < 1)) {
+            if (minutes > 0 && (days < 1 || hours < 1)) {
                 sb.append(Long.toString(minutes));
                 sb.append(" minutes ");
             }
