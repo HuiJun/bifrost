@@ -297,7 +297,6 @@ public class NovaROClient {
                         StringBuilder tableCell = new StringBuilder();
                         for (int j = 0; j < nodes.item(h).getChildNodes().item(i).getChildNodes().getLength(); j++) {
                             Node node = nodes.item(h).getChildNodes().item(i).getChildNodes().item(j);
-                            logger.info("Node Name: " + node.getNodeName());
                             switch (node.getNodeName()) {
                                 case "span":
                                     String spanValue = node.getFirstChild().getNodeValue().trim();
@@ -320,7 +319,6 @@ public class NovaROClient {
                                         for (int k = 0; k < node.getChildNodes().getLength(); k++) {
                                             Node child = node.getChildNodes().item(k);
                                             if (child.getNodeName().equals("a")) {
-                                                logger.info(child.getNodeValue());
                                                 additional.add(child.getNodeValue().trim());
                                             }
                                         }
