@@ -37,8 +37,8 @@ public class ROChargenURLGen {
 
     public static EmbedObject generateSig(String charName) {
         Random rand = new Random();
-        int bgID = rand.nextInt(BG_MAX) + BG_MIN;
-        int posID = rand.nextInt(POS_MAX) + POS_MIN;
+        int bgID = rand.nextInt(BG_MAX + 1) + BG_MIN;
+        int posID = rand.nextInt(POS_MAX + 1) + POS_MIN;
         return generateSig(charName, bgID, posID);
     }
 
@@ -54,8 +54,8 @@ public class ROChargenURLGen {
 
     public static EmbedObject generateChar(String charName) {
         Random rand = new Random();
-        int poseID = rand.nextInt(POSE_MAX) + POSE_MIN;
-        int rotationID = rand.nextInt(ROTATE_MAX) + ROTATE_MIN;
+        int poseID = rand.nextInt(POSE_MAX + 1) + POSE_MIN;
+        int rotationID = rand.nextInt(ROTATE_MAX + 1) + ROTATE_MIN;
         return generateChar(charName, poseID, rotationID);
     }
 

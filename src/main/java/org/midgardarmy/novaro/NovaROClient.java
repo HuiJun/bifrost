@@ -102,6 +102,7 @@ public class NovaROClient {
             List<List<String>> items = extractIDs(xmlDocument);
 
             EmbedBuilder object = new EmbedBuilder();
+            object.withColor(128, 0, 128);
             object.withTitle("Search Results");
             object.withDescription("```haskell");
             object.appendDescription(String.format("%n"));
@@ -195,6 +196,7 @@ public class NovaROClient {
                 List<List<String>> results = extractData(xmlDocument);
 
                 EmbedBuilder object = new EmbedBuilder();
+                object.withColor(128, 0, 128);
                 object.withTitle(String.format("Vendors Selling %s", items.get(Integer.parseInt(id)).getOrDefault("name", "Unknown")));
 
                 if (!results.isEmpty()) {
