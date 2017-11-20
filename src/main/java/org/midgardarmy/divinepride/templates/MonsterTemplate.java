@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -119,7 +120,7 @@ public class MonsterTemplate extends BaseTemplate {
                     Integer itemId = entry.getKey();
                     Map<String, Object> item = entry.getValue();
                     String dropChance = String.format("%.2f", modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100.00f));
-                    dropMap.put(dropChance, String.format("%s (%d) - %s%%%n", item.getOrDefault("name", "Unknown"), itemId, dropChance));
+                    dropMap.put(dropChance, String.format("* %s (%d) - %s%%%n", item.getOrDefault("name", "Unknown"), itemId, dropChance));
                 }
 
                 ids.removeAll(items.keySet());
@@ -128,36 +129,56 @@ public class MonsterTemplate extends BaseTemplate {
                     logger.debug(String.format("Could not find some elements : %s", String.join("", idsString)));
                 }
 
+                dropList.append("```haskell");
+                dropList.append(String.format("%n"));
                 for (Map.Entry<String, String> drop : dropMap.entrySet()) {
                     dropList.append(drop.getValue());
                 }
+                dropList.append(String.format("%n"));
+                dropList.append("```");
             }
         }
 
         StringBuilder spawnList = new StringBuilder();
-        if (spawnArr != null) {
+        if (spawnArr != null && spawnArr.length() > 0) {
+            spawnList.append("```haskell");
+            spawnList.append(String.format("%n"));
             for (int i = 0; i < spawnArr.length(); i++) {
                 JSONObject spawn = spawnArr.getJSONObject(i);
-                spawnList.append(String.format("%s (%d)", spawn.getString("mapname"), spawn.optInt("amount")));
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(spawn.optInt("respawnTime"));
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(spawn.optInt("respawnTime")) - (60 * minutes);
+                StringBuilder respawnTime = new StringBuilder();
+                if (minutes > 0) {
+                    respawnTime.append(String.format("%sm ", Long.toString(minutes)));
+                }
+                if (seconds > 0) {
+                    respawnTime.append(String.format("%ss", Long.toString(seconds)));
+                }
+                spawnList.append(String.format("[%s] (%dx) %s", spawn.getString("mapname"), spawn.optInt("amount"), respawnTime.toString()));
                 spawnList.append(String.format("%n"));
             }
+            spawnList.append(String.format("%n"));
+            spawnList.append("```");
         }
 
         builder.withColor(255, 0, 0);
-        builder.withThumbnail(String.format("https://static.divine-pride.net/images/mobs/png/%d.png", root.optInt("id")));
+        builder.withImage(String.format("https://static.divine-pride.net/images/mobs/png/%d.png", root.optInt("id")));
 
         builder.withAuthorName("DivinePride.net");
         builder.withAuthorIcon("https://static.divine-pride.net/images/logo.png");
         builder.withAuthorUrl(String.format("https://www.divine-pride.net/database/monster/%d", root.optInt("id")));
 
+        builder.withFooterText(root.optString("dbname"));
+
         builder.appendField("ID", Integer.toString(root.optInt("id")), false);
 
-        builder.appendField("Name", root.getString("name"), true);
-        builder.appendField("Level", Integer.toString(stats.optInt("level")), true);
+        builder.appendField("Name", root.getString("name"), false);
 
-        builder.appendField("Health", Integer.toString(stats.optInt("health")), true);
+        builder.appendField("Level", Integer.toString(stats.optInt("level")), true);
         builder.appendField("Base Exp", Integer.toString(modifyBaseExp(stats.optInt("baseExperience"))), true);
         builder.appendField("Job Exp", Integer.toString(modifyJobExp(stats.optInt("jobExperience"))), true);
+
+        builder.appendField("Health", Integer.toString(stats.optInt("health")), true);
 
         builder.appendField("STR", Integer.toString(stats.optInt("str")), true);
         builder.appendField("AGI", Integer.toString(stats.optInt("agi")), true);
@@ -183,7 +204,7 @@ public class MonsterTemplate extends BaseTemplate {
             builder.appendField("Drops", dropList.toString(), false);
         }
         if (spawnList.length() > 0) {
-            builder.appendField("Maps", spawnList.toString(), false);
+            builder.appendField("Spawn Locations", spawnList.toString(), false);
         }
 
         return builder;
