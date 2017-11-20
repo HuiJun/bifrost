@@ -60,8 +60,6 @@ public class NovaROClient {
         ITEM.add(new BasicNameValuePair("action", "item"));
     }
 
-    private static int refine;
-
     private static CookieStore cookieStore = new BasicCookieStore();
 
     public static synchronized List<EmbedObject> getByName(String name) {
@@ -71,6 +69,8 @@ public class NovaROClient {
                 logger.info("Logging In");
                 postLogin();
             }
+
+            int refine = 0;
 
             if (name.startsWith("+")) {
                 int space = name.indexOf(' ');
@@ -125,7 +125,7 @@ public class NovaROClient {
             }
 
             if (itemCount == 1) {
-                return getById(Arrays.asList(currentId));
+                return getById(Arrays.asList(currentId), refine);
             }
 
             object.appendDescription(String.format("%n"));
@@ -145,7 +145,11 @@ public class NovaROClient {
         return getById(ids, 1);
     }
 
-    public static synchronized List<EmbedObject> getById(List<String> ids, int page) {
+    public static synchronized List<EmbedObject> getById(List<String> ids, int refine) {
+        return getById(ids, 1, refine);
+    }
+
+    public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
         List<EmbedObject> resultList = new ArrayList<>();
 
         List<Integer> intIds = new ArrayList<>();
@@ -292,6 +296,7 @@ public class NovaROClient {
                         StringBuilder tableCell = new StringBuilder();
                         for (int j = 0; j < nodes.item(h).getChildNodes().item(i).getChildNodes().getLength(); j++) {
                             Node node = nodes.item(h).getChildNodes().item(i).getChildNodes().item(j);
+                            logger.info("Node Name: " + node.getNodeName());
                             switch (node.getNodeName()) {
                                 case "span":
                                     String spanValue = node.getFirstChild().getNodeValue().trim();
