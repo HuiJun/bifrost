@@ -142,7 +142,7 @@ public class NovaROClient {
     }
 
     public static synchronized List<EmbedObject> getById(List<String> ids) {
-        return getById(ids, 1);
+        return getById(ids, 1, 0);
     }
 
     public static synchronized List<EmbedObject> getById(List<String> ids, int refine) {
@@ -178,6 +178,7 @@ public class NovaROClient {
                     itemList.add(new BasicNameValuePair("refine", Integer.toString(refine)));
                 }
                 b.addParameters(itemList);
+                logger.info(b.toString());
                 HttpResponse<String> itemResult = getHTML(b.toString());
 
                 Tidy tidy = new Tidy();
