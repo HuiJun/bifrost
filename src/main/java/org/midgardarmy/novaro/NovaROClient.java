@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.midgardarmy.utils.BotUtils;
@@ -61,6 +60,8 @@ public class NovaROClient {
         ITEM.add(new BasicNameValuePair("action", "item"));
     }
 
+    private static int refine;
+
     private static CookieStore cookieStore = new BasicCookieStore();
 
     public static synchronized List<EmbedObject> getByName(String name) {
@@ -69,6 +70,14 @@ public class NovaROClient {
             if (cookieStore.getCookies().isEmpty()) {
                 logger.info("Logging In");
                 postLogin();
+            }
+
+            if (name.startsWith("+")) {
+                int space = name.indexOf(' ');
+                refine = Integer.parseInt(name.substring(1, space));
+                name = name.substring(space + 1);
+                logger.info("Name: " + name);
+                logger.info("Refine: " + refine);
             }
 
             URIBuilder b = new URIBuilder(BASEURL);
@@ -91,8 +100,6 @@ public class NovaROClient {
             Document xmlDocument = tidy.parseDOM(inputStream, null);
 
             List<List<String>> items = extractIDs(xmlDocument);
-
-            logger.info("Items Size: " + items.size());
 
             EmbedBuilder object = new EmbedBuilder();
             object.withTitle("Search Results");
@@ -135,6 +142,10 @@ public class NovaROClient {
     }
 
     public static synchronized List<EmbedObject> getById(List<String> ids) {
+        return getById(ids, 1);
+    }
+
+    public static synchronized List<EmbedObject> getById(List<String> ids, int page) {
         List<EmbedObject> resultList = new ArrayList<>();
 
         List<Integer> intIds = new ArrayList<>();
@@ -155,6 +166,13 @@ public class NovaROClient {
                 List<NameValuePair> itemList = new ArrayList<>();
                 itemList.addAll(ITEM);
                 itemList.add(new BasicNameValuePair("id", id));
+                if (page > 1) {
+                    itemList.add(new BasicNameValuePair("p", Integer.toString(page)));
+                }
+                if (refine > 0) {
+                    itemList.add(new BasicNameValuePair("refine_op", "gt"));
+                    itemList.add(new BasicNameValuePair("refine", Integer.toString(refine)));
+                }
                 b.addParameters(itemList);
                 HttpResponse<String> itemResult = getHTML(b.toString());
 
@@ -200,8 +218,8 @@ public class NovaROClient {
                             sb.append("No Results Found");
                         }
                         object.appendDescription(sb.toString());
-
                     }
+
                     object.appendDescription(String.format("%n"));
                     object.appendDescription("```");
                     resultList.add(object.build());
@@ -287,7 +305,7 @@ public class NovaROClient {
                                     break;
 
                                 case "a":
-                                    tableCell.append(node.getNodeValue().trim());
+                                    tableCell.append(node.getFirstChild().getNodeValue().trim());
                                     break;
 
                                 default:
