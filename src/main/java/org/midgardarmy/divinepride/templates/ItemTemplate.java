@@ -30,7 +30,7 @@ public class ItemTemplate extends BaseTemplate {
             thumbnail = String.format("https://static.divine-pride.net/images/items/cards/%d.png", root.getInt("id"));
         }
 
-        builder.withThumbnail(thumbnail);
+        builder.withImage(thumbnail);
 
         builder.withAuthorName("DivinePride.net");
         builder.withAuthorIcon("https://static.divine-pride.net/images/logo.png");
@@ -40,15 +40,18 @@ public class ItemTemplate extends BaseTemplate {
         builder.appendField("Name", root.getString("name"), false);
         builder.appendField("Description", clean(root.getString("description")), false);
 
-        builder.withFooterText(root.getString("aegisName"));
+        builder.withFooterText(root.optString("aegisName"));
         builder.withFooterIcon(String.format("http://www.divine-pride.net/img/items/item/iRO/%d", root.getInt("id")));
 
         return builder;
     }
 
     private static boolean isCard(JSONObject json) {
-        String aegisName = json.getString("aegisName");
-        return aegisName.substring(aegisName.length() - 4).equalsIgnoreCase("CARD");
+        String aegisName = json.optString("aegisName");
+        if (aegisName == null || aegisName.isEmpty()) {
+            aegisName = json.optString("name");
+        }
+        return aegisName.substring(aegisName.length() > 4 ? aegisName.length() - 4 : 0).equalsIgnoreCase("CARD");
     }
 
     private ItemTemplate() {}
