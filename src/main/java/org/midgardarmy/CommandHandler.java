@@ -180,6 +180,9 @@ public class CommandHandler {
                 } else if (itemName.startsWith("prev")) {
                     itemName = previousCommand.get("itemName");
                     pageNum = Integer.parseInt(previousCommand.get("pageNum")) - 1;
+                    if (pageNum < 1) {
+                        pageNum = 1;
+                    }
                 } else if (itemName.startsWith("page")) {
                     String command = itemName;
                     itemName = previousCommand.get("itemName");
@@ -188,7 +191,7 @@ public class CommandHandler {
             }
             Map<String, String> cache = new HashMap<>();
             cache.put("itemName", itemName);
-            cache.put("pageNum", Integer.toString(pageNum));
+            cache.put("pageNum", Integer.toString(pageNum > 1 ? pageNum : 1));
             commandCache.put(cacheKey, cache);
 
             if (!Character.isDigit(itemName.charAt(0))) {

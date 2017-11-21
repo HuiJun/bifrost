@@ -229,7 +229,7 @@ public class NovaROClient {
 
                 object.appendDescription(String.format("%n"));
                 object.appendDescription("```");
-                object.withFooterText(String.format("Page %d of %s", page, pageNum));
+                object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, pageNum, BotUtils.BOT_PREFIX));
                 resultList.add(object.build());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
@@ -353,27 +353,17 @@ public class NovaROClient {
 
             NodeList nodes = (NodeList) xPath.compile(pageNums).evaluate(xmlDocument, XPathConstants.NODESET);
             Node node = (Node) xPath.compile(pageNext).evaluate(xmlDocument, XPathConstants.NODE);
-            logger.info(node.getNodeName());
-            logger.info(node.getNodeValue());
-            if (node.getNodeName().equals("a")) {
-                logger.info(node.getNodeValue());
+            if (node != null && node.getNodeName().equals("a")) {
                 return "10+";
             }
-            int largest = 0;
-            for (int i = 0; i < nodes.getLength(); i++) {
-                int current = Integer.parseInt(nodes.item(i).getNodeValue());
-                if (current > largest) {
-                    largest = current;
-                }
-            }
-            return String.format("%d", largest);
+            return Integer.toString(nodes.getLength() + 1);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getPages Error: ", e);
             }
         }
 
-        return "0";
+        return "1";
     }
 
     private static HttpResponse<String> getHTML(String url) throws UnirestException {
