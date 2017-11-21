@@ -62,7 +62,7 @@ public class NovaROClient {
 
     private static CookieStore cookieStore = new BasicCookieStore();
 
-    public static synchronized List<EmbedObject> getByName(String name) {
+    public static synchronized List<EmbedObject> getByName(String name, int pageNum) {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty()) {
@@ -76,8 +76,6 @@ public class NovaROClient {
                 int space = name.indexOf(' ');
                 refine = Integer.parseInt(name.substring(1, space));
                 name = name.substring(space + 1);
-                logger.info("Name: " + name);
-                logger.info("Refine: " + refine);
             }
 
             URIBuilder b = new URIBuilder(BASEURL);
@@ -126,7 +124,7 @@ public class NovaROClient {
             }
 
             if (itemCount == 1) {
-                return getById(Arrays.asList(currentId), refine);
+                return getById(Arrays.asList(currentId), pageNum, refine);
             }
 
             object.appendDescription(String.format("%n"));
@@ -140,14 +138,6 @@ public class NovaROClient {
             }
         }
         return resultList;
-    }
-
-    public static synchronized List<EmbedObject> getById(List<String> ids) {
-        return getById(ids, 1, 0);
-    }
-
-    public static synchronized List<EmbedObject> getById(List<String> ids, int refine) {
-        return getById(ids, 1, refine);
     }
 
     public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
@@ -179,7 +169,6 @@ public class NovaROClient {
                     itemList.add(new BasicNameValuePair("refine", Integer.toString(refine)));
                 }
                 b.addParameters(itemList);
-                logger.info(b.toString());
                 HttpResponse<String> itemResult = getHTML(b.toString());
 
                 Tidy tidy = new Tidy();
@@ -194,15 +183,17 @@ public class NovaROClient {
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
 
                 List<List<String>> results = extractData(xmlDocument);
+                String pageNum = getPages(xmlDocument);
 
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
                 object.withTitle(String.format("Vendors Selling %s", items.get(Integer.parseInt(id)).getOrDefault("name", "Unknown")));
+                object.withDescription("```haskell");
+                object.appendDescription(String.format("%n"));
 
                 if (!results.isEmpty()) {
-                    object.withDescription("```haskell");
-                    object.appendDescription(String.format("%n"));
 
+                    StringBuilder sbu = new StringBuilder();
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
                         if (result.size() == 4) {
@@ -221,16 +212,25 @@ public class NovaROClient {
                             sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
                             sb.append(String.format("%s", result.get(2)));
                             sb.append(String.format("%n"));
-                        } else {
-                            sb.append("No Results Found");
                         }
-                        object.appendDescription(sb.toString());
+
+                        sbu.append(sb.toString());
                     }
 
-                    object.appendDescription(String.format("%n"));
-                    object.appendDescription("```");
-                    resultList.add(object.build());
+                    if (sbu.length() > 0) {
+                        object.appendDescription(sbu.toString());
+                    } else {
+                        object.appendDescription("No Results Found.");
+                    }
+
+                } else {
+                    object.appendDescription("No Results Found.");
                 }
+
+                object.appendDescription(String.format("%n"));
+                object.appendDescription("```");
+                object.withFooterText(String.format("Page %d of %s", page, pageNum));
+                resultList.add(object.build());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("getById: ", e);
@@ -343,6 +343,37 @@ public class NovaROClient {
         }
 
         return result;
+    }
+
+    private static String getPages(Document xmlDocument) {
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            String pageNums = "//div[contains(@class, 'pages')]/a[contains(@class, 'page-num')]";
+            String pageNext = "//div[contains(@class, 'pages')]/a[contains(@class, 'page-next')]";
+
+            NodeList nodes = (NodeList) xPath.compile(pageNums).evaluate(xmlDocument, XPathConstants.NODESET);
+            Node node = (Node) xPath.compile(pageNext).evaluate(xmlDocument, XPathConstants.NODE);
+            logger.info(node.getNodeName());
+            logger.info(node.getNodeValue());
+            if (node.getNodeName().equals("a")) {
+                logger.info(node.getNodeValue());
+                return "10+";
+            }
+            int largest = 0;
+            for (int i = 0; i < nodes.getLength(); i++) {
+                int current = Integer.parseInt(nodes.item(i).getNodeValue());
+                if (current > largest) {
+                    largest = current;
+                }
+            }
+            return String.format("%d", largest);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("getPages Error: ", e);
+            }
+        }
+
+        return "0";
     }
 
     private static HttpResponse<String> getHTML(String url) throws UnirestException {

@@ -31,6 +31,8 @@ public class CommandHandler {
     private static Map<Long, IMessage> processingMap = new HashMap<>();
     private static List<String> internalProcesses = new ArrayList<>(Arrays.asList("sig", "char", "help", "events"));
 
+    private static Map<String, Map<String, String>> commandCache = new HashMap<>();
+
     private static Map<String, List<String>> helpMap = new HashMap<>();
 
     static {
@@ -167,10 +169,32 @@ public class CommandHandler {
             String itemName = args.isEmpty() ? "jellopy" : String.join(" ", args);
             List<EmbedObject> responses;
 
+            String cacheKey = event.getAuthor().getStringID();
+            int pageNum = 1;
+
+            if (commandCache.containsKey(cacheKey)) {
+                Map<String, String> previousCommand = commandCache.get(cacheKey);
+                if (itemName.startsWith("next")) {
+                    itemName = previousCommand.get("itemName");
+                    pageNum = Integer.parseInt(previousCommand.get("pageNum")) + 1;
+                } else if (itemName.startsWith("prev")) {
+                    itemName = previousCommand.get("itemName");
+                    pageNum = Integer.parseInt(previousCommand.get("pageNum")) - 1;
+                } else if (itemName.startsWith("page")) {
+                    String command = itemName;
+                    itemName = previousCommand.get("itemName");
+                    pageNum = Integer.parseInt(command.substring(5));
+                }
+            }
+            Map<String, String> cache = new HashMap<>();
+            cache.put("itemName", itemName);
+            cache.put("pageNum", Integer.toString(pageNum));
+            commandCache.put(cacheKey, cache);
+
             if (!Character.isDigit(itemName.charAt(0))) {
-                responses = NovaROClient.getByName(itemName);
+                responses = NovaROClient.getByName(itemName, pageNum);
             } else {
-                responses = NovaROClient.getById(args);
+                responses = NovaROClient.getById(args, pageNum, 0);
             }
 
             processingMap.get(event.getMessageID()).delete();
