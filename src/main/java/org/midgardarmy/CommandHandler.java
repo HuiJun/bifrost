@@ -197,7 +197,8 @@ public class CommandHandler {
             if (!Character.isDigit(itemName.charAt(0))) {
                 responses = NovaROClient.getByName(itemName, pageNum);
             } else {
-                responses = NovaROClient.getById(args, pageNum, 0);
+                List<String> ids = Arrays.asList(itemName);
+                responses = NovaROClient.getById(ids, pageNum, 0);
             }
 
             processingMap.get(event.getMessageID()).delete();
