@@ -356,7 +356,7 @@ public class NovaROClient {
             if (node != null && node.getNodeName().equals("a")) {
                 return "10+";
             }
-            return Integer.toString(nodes.getLength() + 1);
+            return Integer.toString(nodes.getLength());
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getPages Error: ", e);
