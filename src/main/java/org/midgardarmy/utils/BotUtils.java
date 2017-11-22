@@ -40,22 +40,6 @@ public class BotUtils {
         });
     }
 
-    public static void sendReply(IMessage initial, Object message){
-        RequestBuffer.request(() -> {
-            try{
-                if (message instanceof EmbedObject) {
-                    initial.reply("", (EmbedObject) message);
-                } else {
-                    initial.reply((String) message);
-                }
-            } catch (DiscordException e){
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Message could not be sent with error: ", e);
-                }
-            }
-        });
-    }
-
     private BotUtils() {}
 
 }

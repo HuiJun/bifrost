@@ -147,7 +147,6 @@ public class NovaROClient {
         for (String id : ids) {
             intIds.add(Integer.parseInt(id));
         }
-        Map<Integer, Map<String, Object>> items = DataUtils.getItemsByIDs(intIds);
 
         for (String id : ids) {
             try {
@@ -183,11 +182,12 @@ public class NovaROClient {
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
 
                 List<List<String>> results = extractData(xmlDocument);
+                String pageTitle = getItemTitle(xmlDocument);
                 String pageNum = getPages(xmlDocument);
 
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
-                object.withTitle(String.format("Vendors Selling %s", items.get(Integer.parseInt(id)).getOrDefault("name", "Unknown")));
+                object.withTitle(String.format("Vendors Selling %s", pageTitle));
                 object.withDescription("```haskell");
                 object.appendDescription(String.format("%n"));
 
@@ -343,6 +343,27 @@ public class NovaROClient {
         }
 
         return result;
+    }
+
+    private static String getItemTitle(Document xmlDocument) {
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            String title = "//span[contains(@class, 'tooltip')]/a";
+
+            Node node = (Node) xPath.compile(title).evaluate(xmlDocument, XPathConstants.NODE);
+            if (node != null) {
+                logger.info(node.getNodeName());
+                if (node.getNodeName().equals("a")) {
+                    return node.getFirstChild().getNodeValue();
+                }
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("getItemTitle Error: ", e);
+            }
+        }
+
+        return "Unknown";
     }
 
     private static String getPages(Document xmlDocument) {
