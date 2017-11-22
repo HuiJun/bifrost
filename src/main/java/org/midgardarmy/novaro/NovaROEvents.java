@@ -1,5 +1,6 @@
 package org.midgardarmy.novaro;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -76,18 +77,21 @@ public class NovaROEvents {
             sb.append(event.get("name").toString());
             sb.append(END_DELIMITER);
             sb.append(String.join("", Collections.nCopies(longest + PADDING - sb.length(), " ")));
-            sb.append("in ");
 
             ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(event.get("schedule").toString()));
             ZonedDateTime now = ZonedDateTime.now();
-            ZonedDateTime nextExecution = now;
             Optional<ZonedDateTime> nextTime = executionTime.nextExecution(now);
+            Optional<Duration> sinceLast = executionTime.timeFromLastExecution(now);
 
-            if (nextTime.isPresent()) {
-                nextExecution = nextTime.get();
+            long timeDiff = 0;
+
+            if (sinceLast.isPresent() && sinceLast.get().toMillis() < Long.parseLong(event.get("duration").toString())) {
+                timeDiff = Long.parseLong(event.get("duration").toString()) - sinceLast.get().toMillis();
+                sb.append("for ");
+            } else if (nextTime.isPresent()) {
+                timeDiff = now.until(nextTime.get(), ChronoUnit.MILLIS);
+                sb.append("in ");
             }
-
-            long until = now.until(nextExecution, ChronoUnit.MILLIS);
 
             long secondsInMilli = 1000;
             long minutesInMilli = secondsInMilli * 60;
@@ -95,19 +99,19 @@ public class NovaROEvents {
             long daysInMilli = hoursInMilli * 24;
             long weeksInMilli = daysInMilli * 7;
 
-            long weeks = until / weeksInMilli;
-            until = until % weeksInMilli;
+            long weeks = timeDiff / weeksInMilli;
+            timeDiff = timeDiff % weeksInMilli;
 
-            long days = until / daysInMilli;
-            until = until % daysInMilli;
+            long days = timeDiff / daysInMilli;
+            timeDiff = timeDiff % daysInMilli;
 
-            long hours = until / hoursInMilli;
-            until = until % hoursInMilli;
+            long hours = timeDiff / hoursInMilli;
+            timeDiff = timeDiff % hoursInMilli;
 
-            long minutes = until / minutesInMilli;
-            until = until % minutesInMilli;
+            long minutes = timeDiff / minutesInMilli;
+            timeDiff = timeDiff % minutesInMilli;
 
-            long seconds = until / secondsInMilli;
+            long seconds = timeDiff / secondsInMilli;
 
             if (weeks > 0) {
                 sb.append(Long.toString(weeks));

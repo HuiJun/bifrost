@@ -24,3 +24,15 @@ divinepride.apiKey=
 ########################
 novaro.user=
 novaro.pass=
+
+#################
+# Shivtr Config #
+#################
+shivtr.url=
+shivtr.user=
+shivtr.pass=
+
+##################
+# MVP BOT Config #
+##################
+mvpbot.location=

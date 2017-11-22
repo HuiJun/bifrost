@@ -162,7 +162,7 @@ public class DataUtils {
         StringBuilder selectQuery = new StringBuilder();
         PreparedStatement selectPreparedStatement = null;
 
-        selectQuery.append("SELECT id, name, schedule, start, end FROM event_db WHERE start < NOW() AND (end > NOW() OR end IS NULL)");
+        selectQuery.append("SELECT id, name, schedule, start, end, duration FROM event_db WHERE start < NOW() AND (end > NOW() OR end IS NULL)");
 
         try {
             selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
@@ -174,6 +174,7 @@ public class DataUtils {
                 result.put("schedule", rs.getString("schedule"));
                 result.put("start", rs.getTimestamp("start"));
                 result.put("end", rs.getTimestamp("end"));
+                result.put("duration", rs.getLong("duration"));
                 results.add(result);
             }
         } catch (SQLException e) {

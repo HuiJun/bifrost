@@ -1,4 +1,4 @@
-package org.midgardarmy;
+package org.midgardarmy.commands;
 
 import java.util.List;
 
