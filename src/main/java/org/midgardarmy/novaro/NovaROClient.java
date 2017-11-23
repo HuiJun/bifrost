@@ -98,6 +98,8 @@ public class NovaROClient {
             Document xmlDocument = tidy.parseDOM(inputStream, null);
 
             List<List<String>> items = extractIDs(xmlDocument);
+            int pageNumInt = getPages(xmlDocument);
+            logger.info(Integer.toString(pageNumInt));
 
             EmbedBuilder object = new EmbedBuilder();
             object.withColor(128, 0, 128);
@@ -183,7 +185,7 @@ public class NovaROClient {
 
                 List<List<String>> results = extractData(xmlDocument);
                 String pageTitle = getItemTitle(xmlDocument);
-                String pageNum = getPages(xmlDocument);
+                int pageNum = getPages(xmlDocument);
 
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
@@ -229,7 +231,13 @@ public class NovaROClient {
 
                 object.appendDescription(String.format("%n"));
                 object.appendDescription("```");
-                object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, pageNum, BotUtils.BOT_PREFIX));
+                StringBuilder pageNumString = new StringBuilder();
+                if (pageNum > 11) {
+                    pageNumString.append("10+");
+                } else {
+                    pageNumString.append(String.format("%d", pageNum));
+                }
+                object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, pageNumString.toString(), BotUtils.BOT_PREFIX));
                 resultList.add(object.build());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
@@ -366,7 +374,7 @@ public class NovaROClient {
         return "Unknown";
     }
 
-    private static String getPages(Document xmlDocument) {
+    private static int getPages(Document xmlDocument) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String pageNums = "//div[contains(@class, 'pages')]/a[contains(@class, 'page-num')]";
@@ -375,16 +383,16 @@ public class NovaROClient {
             NodeList nodes = (NodeList) xPath.compile(pageNums).evaluate(xmlDocument, XPathConstants.NODESET);
             Node node = (Node) xPath.compile(pageNext).evaluate(xmlDocument, XPathConstants.NODE);
             if (node != null && node.getNodeName().equals("a")) {
-                return "10+";
+                return 11;
             }
-            return Integer.toString(nodes.getLength());
+            return nodes.getLength();
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getPages Error: ", e);
             }
         }
 
-        return "1";
+        return 1;
     }
 
     private static HttpResponse<String> getHTML(String url) throws UnirestException {
