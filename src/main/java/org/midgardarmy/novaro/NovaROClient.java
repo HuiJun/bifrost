@@ -42,7 +42,6 @@ public class NovaROClient {
     public static final String NOVARO_PASS = ConfigUtils.get("novaro.pass");
 
     public static final String BASEURL = "https://www.novaragnarok.com/";
-
     public static final String LOGIN = "module=account&action=login";
 
     public static final List<NameValuePair> SEARCH;
@@ -60,6 +59,8 @@ public class NovaROClient {
     }
 
     private static CookieStore cookieStore = new BasicCookieStore();
+
+    private static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
     public static synchronized List<EmbedObject> getByName(String name, int page, Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
@@ -129,6 +130,8 @@ public class NovaROClient {
             if (itemCount == 1) {
                 cache.put("itemName", currentId);
                 return getById(Arrays.asList(currentId), 1, refine);
+            } else if (itemCount == 0) {
+                object.appendDescription(NO_RESULTS_MESSAGE);
             }
 
             object.appendDescription(String.format("%n"));
@@ -223,11 +226,11 @@ public class NovaROClient {
                     if (sbu.length() > 0) {
                         object.appendDescription(sbu.toString());
                     } else {
-                        object.appendDescription("No Results Found.");
+                        object.appendDescription(NO_RESULTS_MESSAGE);
                     }
 
                 } else {
-                    object.appendDescription("No Results Found.");
+                    object.appendDescription(NO_RESULTS_MESSAGE);
                 }
 
                 object.appendDescription(String.format("%n"));
@@ -395,9 +398,19 @@ public class NovaROClient {
             object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, "+10", BotUtils.BOT_PREFIX));
         } else {
             if (pageNum > 1) {
-                object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                if (page == 1) {
+                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                } else if (page < pageNum) {
+                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                } else if (page == pageNum) {
+                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws prev or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                }
             } else {
-                object.withFooterText(String.format("Page %1$d of %2$s", page, String.format("%d", pageNum)));
+                if (pageNum == 0) {
+                    object.withFooterText(String.format("You went too far, use %1$sws prev or %1$sws page [page number] to go back", BotUtils.BOT_PREFIX));
+                } else {
+                    object.withFooterText(String.format("Page %1$d of %2$s", page, String.format("%d", pageNum)));
+                }
             }
         }
     }
