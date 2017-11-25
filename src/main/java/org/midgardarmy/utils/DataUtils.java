@@ -28,7 +28,12 @@ public class DataUtils {
 
     private static final String DB_DRIVER = "org.h2.Driver";
     private static final String DB_CONNECTION = "jdbc:h2:./bifrost;MODE=MySQL";
-    private static final List<String> sqlFiles = new ArrayList<>(Arrays.asList("data/item_db_re.sql", "data/mob_db_re.sql", "data/event_db.sql"));
+    private static final List<String> sqlFiles = new ArrayList<>(Arrays.asList(
+            "data/item_db_re.sql",
+            "data/mob_db_re.sql",
+            "data/event_db.sql",
+            "data/bifrost_db.sql"
+    ));
 
     private static Connection conn = null;
 

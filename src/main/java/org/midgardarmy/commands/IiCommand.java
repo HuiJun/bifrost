@@ -1,5 +1,7 @@
 package org.midgardarmy.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
@@ -9,6 +11,10 @@ import org.midgardarmy.divinepride.DivinePrideClient;
 import org.midgardarmy.utils.BotUtils;
 
 public class IiCommand implements Command {
+
+    static {
+        helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "ii"), new ArrayList<>(Arrays.asList("<name or id>", "Returns information about an item. Passing a name will return all matching entries.")));
+    }
 
     @Override
     public void runCommand(MessageReceivedEvent event, List<String> args) {

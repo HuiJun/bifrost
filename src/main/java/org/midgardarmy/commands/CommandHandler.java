@@ -1,4 +1,4 @@
-package org.midgardarmy;
+package org.midgardarmy.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,16 +6,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import sx.blah.discord.api.events.EventSubscriber;
+import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.util.EmbedBuilder;
 
-import org.midgardarmy.commands.*;
 import org.midgardarmy.utils.BotUtils;
 import org.midgardarmy.utils.ConfigUtils;
 
-public class CommandHandler {
+public class CommandHandler implements IListener<MessageReceivedEvent> {
 
     private static Map<String, Command> commandMap = new HashMap<>();
     private static Map<Long, IMessage> processingMap = new HashMap<>();
@@ -37,7 +36,6 @@ public class CommandHandler {
         commandMap.put("char", new CharCommand());
         commandMap.put("events", new EventsCommand());
         commandMap.put("help", new HelpCommand());
-        commandMap.put("helppretty", new HelpPrettyCommand());
         commandMap.put("ii", new IiCommand());
         commandMap.put("map", new MapCommand());
         commandMap.put("mi", new MiCommand());
@@ -48,8 +46,8 @@ public class CommandHandler {
         commandMap.put("ws", new WsCommand());
     }
 
-    @EventSubscriber
-    public void onMessageReceived(MessageReceivedEvent event) {
+    @Override
+    public void handle(MessageReceivedEvent event) {
         String[] argArray = event.getMessage().getContent().split(" ");
 
         if (argArray.length == 0 || !argArray[0].startsWith(BotUtils.BOT_PREFIX)) {
