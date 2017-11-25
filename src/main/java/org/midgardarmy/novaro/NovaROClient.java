@@ -22,7 +22,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.midgardarmy.utils.BotUtils;
-import org.midgardarmy.utils.DataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -62,7 +61,7 @@ public class NovaROClient {
 
     private static CookieStore cookieStore = new BasicCookieStore();
 
-    public static synchronized List<EmbedObject> getByName(String name, int pageNum) {
+    public static synchronized List<EmbedObject> getByName(String name, int page, Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty()) {
@@ -83,12 +82,16 @@ public class NovaROClient {
             List<NameValuePair> searchList = new ArrayList<>();
             searchList.addAll(SEARCH);
             searchList.add(new BasicNameValuePair("name", name));
+            if (page > 1) {
+                searchList.add(new BasicNameValuePair("p", Integer.toString(page)));
+            }
             b.addParameters(searchList);
             HttpResponse<String> searchResult = getHTML(b.toString());
 
             Tidy tidy = new Tidy();
             tidy.setQuiet(true);
             tidy.setShowWarnings(false);
+            tidy.setShowErrors(0);
             tidy.setDropEmptyParas(true);
             tidy.setMakeClean(true);
             tidy.setXmlTags(true);
@@ -98,8 +101,7 @@ public class NovaROClient {
             Document xmlDocument = tidy.parseDOM(inputStream, null);
 
             List<List<String>> items = extractIDs(xmlDocument);
-            int pageNumInt = getPages(xmlDocument);
-            logger.info(Integer.toString(pageNumInt));
+            int pageNum = getPages(xmlDocument);
 
             EmbedBuilder object = new EmbedBuilder();
             object.withColor(128, 0, 128);
@@ -117,20 +119,23 @@ public class NovaROClient {
                     sb.append(item.get(2));
                     sb.append(' ');
                     sb.append(String.format("(%s)", item.get(3)));
-                    sb.append(String.format("%n"));
 
-                    object.appendDescription(sb.toString());
+                    object.appendDescription(String.format("%s%n", StringUtils.abbreviate(sb.toString(), 60)));
                     itemCount++;
                     currentId = item.get(0);
                 }
             }
 
             if (itemCount == 1) {
-                return getById(Arrays.asList(currentId), pageNum, refine);
+                cache.put("itemName", currentId);
+                return getById(Arrays.asList(currentId), 1, refine);
             }
 
             object.appendDescription(String.format("%n"));
             object.appendDescription("```");
+
+            addFooter(object, page, pageNum);
+
             resultList.add(object.build());
             return resultList;
 
@@ -144,11 +149,6 @@ public class NovaROClient {
 
     public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
         List<EmbedObject> resultList = new ArrayList<>();
-
-        List<Integer> intIds = new ArrayList<>();
-        for (String id : ids) {
-            intIds.add(Integer.parseInt(id));
-        }
 
         for (String id : ids) {
             try {
@@ -175,6 +175,7 @@ public class NovaROClient {
                 Tidy tidy = new Tidy();
                 tidy.setQuiet(true);
                 tidy.setShowWarnings(false);
+                tidy.setShowErrors(0);
                 tidy.setDropEmptyParas(true);
                 tidy.setMakeClean(true);
                 tidy.setXmlTags(true);
@@ -231,13 +232,8 @@ public class NovaROClient {
 
                 object.appendDescription(String.format("%n"));
                 object.appendDescription("```");
-                StringBuilder pageNumString = new StringBuilder();
-                if (pageNum > 11) {
-                    pageNumString.append("10+");
-                } else {
-                    pageNumString.append(String.format("%d", pageNum));
-                }
-                object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, pageNumString.toString(), BotUtils.BOT_PREFIX));
+                addFooter(object, page, pageNum);
+
                 resultList.add(object.build());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
@@ -360,7 +356,6 @@ public class NovaROClient {
 
             Node node = (Node) xPath.compile(title).evaluate(xmlDocument, XPathConstants.NODE);
             if (node != null) {
-                logger.info(node.getNodeName());
                 if (node.getNodeName().equals("a")) {
                     return node.getFirstChild().getNodeValue();
                 }
@@ -395,6 +390,18 @@ public class NovaROClient {
         return 1;
     }
 
+    private static void addFooter(EmbedBuilder object, int page, int pageNum) {
+        if (pageNum > 11) {
+            object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, "+10", BotUtils.BOT_PREFIX));
+        } else {
+            if (pageNum > 1) {
+                object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+            } else {
+                object.withFooterText(String.format("Page %1$d of %2$s", page, String.format("%d", pageNum)));
+            }
+        }
+    }
+
     private static HttpResponse<String> getHTML(String url) throws UnirestException {
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
@@ -404,12 +411,12 @@ public class NovaROClient {
                 .asString();
     }
 
-    private static HttpResponse<String> postLogin() throws UnirestException {
+    private static void postLogin() throws UnirestException {
         String url = String.format("%s?%s", BASEURL, LOGIN);
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
                 .build());
-        return Unirest.post(url)
+        Unirest.post(url)
                 .header("accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,*/*;q=0.5")
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .field("username", NOVARO_USER)

@@ -29,7 +29,8 @@ public class WsCommand implements Command {
         String cacheKey = event.getAuthor().getStringID();
         int pageNum = 1;
 
-        if (commandCache.containsKey(cacheKey)) {
+        if (commandCache.containsKey(cacheKey) &&
+                (itemName.startsWith("next") || itemName.startsWith("prev") || itemName.startsWith("page"))) {
             Map<String, String> previousCommand = commandCache.get(cacheKey);
             if (itemName.startsWith("next")) {
                 itemName = previousCommand.get(ITEM_NAME);
@@ -49,14 +50,15 @@ public class WsCommand implements Command {
         Map<String, String> cache = new HashMap<>();
         cache.put(ITEM_NAME, itemName);
         cache.put(PAGE_NUM, Integer.toString(pageNum > 1 ? pageNum : 1));
-        commandCache.put(cacheKey, cache);
 
         if (!Character.isDigit(itemName.charAt(0))) {
-            responses = NovaROClient.getByName(itemName, pageNum);
+            responses = NovaROClient.getByName(itemName, pageNum, cache);
         } else {
             List<String> ids = Arrays.asList(itemName);
             responses = NovaROClient.getById(ids, pageNum, 0);
         }
+
+        commandCache.put(cacheKey, cache);
 
         for (EmbedObject response : responses) {
             BotUtils.sendMessage(event.getChannel(), response);

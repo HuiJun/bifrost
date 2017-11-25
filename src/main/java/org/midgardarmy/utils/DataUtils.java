@@ -146,7 +146,6 @@ public class DataUtils {
 
             ResultSet rs = selectPreparedStatement.executeQuery();
             while (rs.next()) {
-                logger.debug(Integer.toString(rs.getInt("ID")));
                 results.add(rs.getInt("ID"));
             }
         } catch (SQLException e) {
