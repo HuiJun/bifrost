@@ -39,3 +39,4 @@ buildNumber.properties
 *.iml
 
 application.properties
+logback-test.xml

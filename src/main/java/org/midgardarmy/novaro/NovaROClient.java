@@ -66,7 +66,6 @@ public class NovaROClient {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty()) {
-                logger.info("Logging In");
                 postLogin();
             }
 
@@ -156,7 +155,6 @@ public class NovaROClient {
         for (String id : ids) {
             try {
                 if (cookieStore.getCookies().isEmpty()) {
-                    logger.info("Logging in");
                     postLogin();
                 }
 
