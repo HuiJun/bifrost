@@ -30,8 +30,7 @@ public class PythonCommand implements Command {
             argsList.set(0, commandStr);
             String arguments = String.join(" ", argsList);
 
-            String commandString = String.format("%s %s %s", python, script, arguments);
-            Process p = Runtime.getRuntime().exec(commandString);
+            Process p = Runtime.getRuntime().exec(String.format("%s %s %s", python, script, arguments));
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
