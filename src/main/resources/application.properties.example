@@ -33,6 +33,7 @@ shivtr.user=
 shivtr.pass=
 
 ##################
-# MVP BOT Config #
+# Bifrost Config #
 ##################
-mvpbot.location=
+bifrost.python=
+bifrost.mvpbot.location=

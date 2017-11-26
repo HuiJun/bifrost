@@ -39,9 +39,9 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
         commandMap.put("ii", new IiCommand());
         commandMap.put("map", new MapCommand());
         commandMap.put("mi", new MiCommand());
-        commandMap.put("mvp", new MvpCommand());
-        commandMap.put("mvphelp", new MvpHelpCommand());
-        commandMap.put("mvplist", new MvpListCommand());
+        commandMap.put("mvp", new PythonCommand());
+        commandMap.put("mvphelp", new PythonCommand());
+        commandMap.put("mvplist", new PythonCommand());
         commandMap.put("sig", new SigCommand());
         commandMap.put("ws", new WsCommand());
     }
