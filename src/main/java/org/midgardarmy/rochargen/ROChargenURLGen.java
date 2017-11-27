@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -36,9 +36,8 @@ public class ROChargenURLGen {
     private static final int POSE_MAX = Integer.parseInt(ConfigUtils.get("rochargen.pose.max"));
 
     public static EmbedObject generateSig(String charName) {
-        Random rand = new Random();
-        int bgID = rand.nextInt(BG_MAX + 1) + BG_MIN;
-        int posID = rand.nextInt(POS_MAX + 1) + POS_MIN;
+        int bgID = ThreadLocalRandom.current().nextInt(BG_MIN, BG_MAX + 1);
+        int posID = ThreadLocalRandom.current().nextInt(POS_MIN, POS_MAX + 1);
         return generateSig(charName, bgID, posID);
     }
 
@@ -53,9 +52,8 @@ public class ROChargenURLGen {
     }
 
     public static EmbedObject generateChar(String charName) {
-        Random rand = new Random();
-        int poseID = rand.nextInt(POSE_MAX + 1) + POSE_MIN;
-        int rotationID = rand.nextInt(ROTATE_MAX + 1) + ROTATE_MIN;
+        int poseID = ThreadLocalRandom.current().nextInt(POSE_MIN, POSE_MAX + 1);
+        int rotationID = ThreadLocalRandom.current().nextInt(ROTATE_MIN, ROTATE_MAX + 1);
         return generateChar(charName, poseID, rotationID);
     }
 
