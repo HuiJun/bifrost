@@ -2,7 +2,11 @@
 # Discord Config #
 ##################
 discord.bot.token=
-discord.bot.prefix=
+discord.bot.prefix=!
+discord.bot.name=
+discord.bot.playing=
+discord.bot.avatar.url=
+discord.bot.avatar.type=png
 discord.bot.processing=
 
 ####################

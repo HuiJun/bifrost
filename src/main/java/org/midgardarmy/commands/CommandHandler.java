@@ -26,7 +26,7 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
         processingMessage = new EmbedBuilder();
         String processingUrl = ConfigUtils.get("discord.bot.processing");
         if (!processingUrl.isEmpty()) {
-            processingMessage.withImage(ConfigUtils.get("discord.bot.processing"));
+            processingMessage.withImage(processingUrl);
         } else {
             processingMessage.withDescription("Processing...");
         }
