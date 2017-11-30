@@ -92,10 +92,6 @@ public class NovaROClient {
             tidy.setQuiet(true);
             tidy.setShowWarnings(false);
             tidy.setShowErrors(0);
-            tidy.setDropEmptyParas(true);
-            tidy.setMakeClean(true);
-            tidy.setXmlTags(true);
-            tidy.setXmlOut(true);
 
             ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
             Document xmlDocument = tidy.parseDOM(inputStream, null);
@@ -177,10 +173,6 @@ public class NovaROClient {
                 tidy.setQuiet(true);
                 tidy.setShowWarnings(false);
                 tidy.setShowErrors(0);
-                tidy.setDropEmptyParas(true);
-                tidy.setMakeClean(true);
-                tidy.setXmlTags(true);
-                tidy.setXmlOut(true);
 
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes("UTF-8"));
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
@@ -200,7 +192,16 @@ public class NovaROClient {
                     StringBuilder sbu = new StringBuilder();
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
-                        if (result.size() == 4) {
+                        if (result.size() == 5) {
+                            sb.append(String.format("%s", result.get(1)));
+                            sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
+                            sb.append(String.format("%s", result.get(2)));
+                            sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
+                            sb.append(StringUtils.abbreviate(result.get(3), 16));
+                            sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                            sb.append(String.format("%s", result.get(4)));
+                            sb.append(String.format("%n"));
+                        } else if (result.size() == 4) {
                             sb.append(String.format("%s", result.get(0)));
                             sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
                             sb.append(String.format("%s", result.get(1)));
@@ -305,6 +306,7 @@ public class NovaROClient {
                         for (int j = 0; j < nodes.item(h).getChildNodes().item(i).getChildNodes().getLength(); j++) {
                             Node node = nodes.item(h).getChildNodes().item(i).getChildNodes().item(j);
                             switch (node.getNodeName()) {
+
                                 case "span":
                                     String spanValue = node.getFirstChild().getNodeValue().trim();
                                     for (int k = 0; k < node.getAttributes().getLength(); k++) {
@@ -348,6 +350,20 @@ public class NovaROClient {
         }
 
         return result;
+    }
+
+    private static List<String> getDeepestValues(Node node) {
+        List<String> results = new ArrayList<>();
+        for (int k = 0; k < node.getChildNodes().getLength(); k++) {
+            Node child = node.getChildNodes().item(k);
+            if (child.getChildNodes().getLength() > 0) {
+                results.addAll(getDeepestValues(child));
+            } else {
+                results.add(child.getNodeValue());
+            }
+        }
+
+        return results;
     }
 
     private static String getItemTitle(Document xmlDocument) {

@@ -133,7 +133,7 @@ public class DivinePrideClient {
         return result;
     }
 
-    private static HttpResponse<String> getHTML(String url) throws UnirestException {
+    public static HttpResponse<String> getHTML(String url) throws UnirestException {
         return Unirest.get(url)
                 .header("accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,*/*;q=0.5")
                 .asString();
