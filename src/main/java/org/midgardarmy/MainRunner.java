@@ -22,6 +22,7 @@ public class MainRunner {
         IDiscordClient client = BotUtils.getBuiltDiscordClient(token);
         client.getDispatcher().registerListener(new CommandHandler());
         client.getDispatcher().registerListener(readyEvent -> {
+            if (client.isLoggedIn()) {
                 String name = ConfigUtils.get("discord.bot.name");
                 String playing = ConfigUtils.get("discord.bot.playing");
                 String avatar = ConfigUtils.get("discord.bot.avatar.url");
@@ -36,6 +37,7 @@ public class MainRunner {
                 if (avatar != null && !avatar.isEmpty() && avatarType != null && !avatarType.isEmpty()) {
                     client.changeAvatar(Image.forUrl(avatarType, avatar));
                 }
+            }
         });
 
         client.login();

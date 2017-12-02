@@ -438,7 +438,7 @@ public class NovaROMarket {
                 }
             } else {
                 if (pageNum == 0) {
-                    object.withFooterText(String.format("You went too far, use %1$s%2$s prev or %1$s%2$s page [page number] to go back", BotUtils.BOT_PREFIX, command));
+                    object.withFooterText("Well, that sucked. You probably did something wrong.");
                 } else {
                     object.withFooterText(String.format("Page %1$d of %2$d", page > 1 ? page : 1, pageNum));
                 }
