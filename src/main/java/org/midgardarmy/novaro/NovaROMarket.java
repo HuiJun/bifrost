@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -62,7 +61,7 @@ public class NovaROMarket {
 
     private static CookieStore cookieStore = new BasicCookieStore();
 
-    private static final String NO_RESULTS_MESSAGE = "No Results Found.";
+    static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
     public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
@@ -149,13 +148,16 @@ public class NovaROMarket {
                 List<NameValuePair> itemList = new ArrayList<>();
                 itemList.addAll(ITEM);
                 itemList.add(new BasicNameValuePair("id", id));
+
                 if (page > 1) {
                     itemList.add(new BasicNameValuePair("p", Integer.toString(page)));
                 }
+
                 if (refine > 0) {
                     itemList.add(new BasicNameValuePair("refine_op", "gt"));
                     itemList.add(new BasicNameValuePair("refine", Integer.toString(refine)));
                 }
+
                 b.addParameters(itemList);
                 HttpResponse<String> itemResult = getHTML(b.toString());
 
@@ -178,35 +180,43 @@ public class NovaROMarket {
                 object.appendDescription(String.format("%n"));
 
                 if (!results.isEmpty()) {
-
                     StringBuilder sbu = new StringBuilder();
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
-                        if (result.size() == 5) {
-                            sb.append(String.format("%s", result.get(1)));
-                            sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(2)));
-                            sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(3), 16));
-                            sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(4)));
-                            sb.append(String.format("%n"));
-                        } else if (result.size() == 4) {
-                            sb.append(String.format("%s", result.get(0)));
-                            sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(1)));
-                            sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(2), 16));
-                            sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(3)));
-                            sb.append(String.format("%n"));
-                        } else if (result.size() == 3) {
-                            sb.append(String.format("%s", result.get(0)));
-                            sb.append(String.join("", Collections.nCopies(14 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(1), 16));
-                            sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(2)));
-                            sb.append(String.format("%n"));
+                        switch (result.size()) {
+                            case 3:
+                                sb.append(result.get(0));
+                                sb.append(String.join("", Collections.nCopies(14 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(1), 16));
+                                sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                                sb.append(result.get(2));
+                                sb.append(String.format("%n"));
+                                break;
+
+                            case 4:
+                                sb.append(result.get(0));
+                                sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
+                                sb.append(result.get(1));
+                                sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(2), 16));
+                                sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                                sb.append(result.get(3));
+                                sb.append(String.format("%n"));
+                                break;
+
+                            case 5:
+                                sb.append(result.get(1));
+                                sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
+                                sb.append(result.get(2));
+                                sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(3), 16));
+                                sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                                sb.append(result.get(4));
+                                sb.append(String.format("%n"));
+                                break;
+
+                            default:
+                                break;
                         }
 
                         sbu.append(sb.toString());
@@ -288,7 +298,7 @@ public class NovaROMarket {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String expression = "//table[contains(@class, 'horizontal-table')]/tbody/tr";
             NodeList nodes = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
-            for (int h = 2; h < nodes.getLength(); h++) {
+            for (int h = 0; h < nodes.getLength(); h++) {
                 List<String> data = new ArrayList<>();
                 for (int i = 0; i < nodes.item(h).getChildNodes().getLength(); i++) {
                     if (nodes.item(h).getChildNodes().item(i).getNodeName().equals("td")) {
@@ -331,7 +341,7 @@ public class NovaROMarket {
                         data.add(tableCell.toString());
                     }
                 }
-                result.add(h - 2, data);
+                result.add(h, data);
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
@@ -362,10 +372,8 @@ public class NovaROMarket {
             String title = "//span[contains(@class, 'tooltip')]/a";
 
             Node node = (Node) xPath.compile(title).evaluate(xmlDocument, XPathConstants.NODE);
-            if (node != null) {
-                if (node.getNodeName().equals("a")) {
-                    return node.getFirstChild().getNodeValue();
-                }
+            if (node != null && node.getNodeName().equals("a")) {
+                return node.getFirstChild().getNodeValue();
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
@@ -418,21 +426,21 @@ public class NovaROMarket {
 
     static void addFooter(EmbedBuilder object, String command, int page, int pageNum) {
         if (pageNum > 10) {
-            object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, "10+", BotUtils.BOT_PREFIX, command));
+            object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, "10+", BotUtils.BOT_PREFIX, command));
         } else {
             if (pageNum > 1) {
                 if (page == 1) {
-                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next or %3$s%4$s page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX, command));
+                    object.withFooterText(String.format("Page 1 of %2$d (Use %3$s%4$s next or %3$s%4$s page [page number] to navigate)", pageNum, BotUtils.BOT_PREFIX, command));
                 } else if (page < pageNum) {
-                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX, command));
+                    object.withFooterText(String.format("Page %1$d of %2$d (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, pageNum, BotUtils.BOT_PREFIX, command));
                 } else if (page == pageNum) {
-                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX, command));
+                    object.withFooterText(String.format("Page %1$d of %2$d (Use %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, pageNum, BotUtils.BOT_PREFIX, command));
                 }
             } else {
                 if (pageNum == 0) {
                     object.withFooterText(String.format("You went too far, use %1$s%2$s prev or %1$s%2$s page [page number] to go back", BotUtils.BOT_PREFIX, command));
                 } else {
-                    object.withFooterText(String.format("Page %1$d of %2$s", page, String.format("%d", pageNum)));
+                    object.withFooterText(String.format("Page %1$d of %2$d", page > 1 ? page : 1, pageNum));
                 }
             }
         }

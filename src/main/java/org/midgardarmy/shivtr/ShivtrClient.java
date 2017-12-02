@@ -26,6 +26,10 @@ public class ShivtrClient {
     private static final String TOKEN = postLogin();
 
     public static List<EmbedObject> getApplications() {
+        postLogin();
+        if (TOKEN == null && TOKEN.isEmpty()) {
+
+        }
         StringBuilder url = new StringBuilder();
         url.append(BASEURL);
         url.append("site_applications.json");
@@ -53,8 +57,10 @@ public class ShivtrClient {
                     .header("accept", "application/json")
                     .header("Content-Type", "application/json")
                     .body(json)
-                    .asString()
-                    .getBody();
+                    .asJson()
+                    .getBody()
+                    .getObject()
+                    .optString("authentication_token", null);
         } catch (UnirestException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("PostLogin Error: ", e);

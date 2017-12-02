@@ -10,10 +10,15 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,8 +38,6 @@ public class NovaROMarketHistory extends NovaROMarket {
     }
 
     private static CookieStore cookieStore = new BasicCookieStore();
-
-    private static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
     public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
@@ -124,9 +127,8 @@ public class NovaROMarketHistory extends NovaROMarket {
                 itemList.add(new BasicNameValuePair("id", id));
                 if (page > 1) {
                     itemList.add(new BasicNameValuePair("p", Integer.toString(page)));
-                } else {
-                    page = 1;
                 }
+
                 if (refine > 0) {
                     itemList.add(new BasicNameValuePair("refine_op", "gt"));
                     itemList.add(new BasicNameValuePair("refine", Integer.toString(refine)));
@@ -143,48 +145,92 @@ public class NovaROMarketHistory extends NovaROMarket {
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
 
                 List<List<String>> results = NovaROMarket.extractData(xmlDocument);
+
                 String pageTitle = getItemTitle(xmlDocument);
                 int pageNum = getPages(xmlDocument);
 
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
-                object.withTitle(String.format("Market History for %s", pageTitle));
+                object.withTitle(String.format("Transaction History for %s", pageTitle));
                 object.withDescription("```haskell");
                 object.appendDescription(String.format("%n"));
 
                 if (!results.isEmpty()) {
 
                     StringBuilder sbu = new StringBuilder();
+                    StringBuilder mhu = new StringBuilder();
+                    boolean mhh = false;
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
-                        if (result.size() == 5) {
-                            sb.append(String.format("%s", result.get(1)));
-                            sb.append(String.join("", Collections.nCopies(17 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(2)));
-                            sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(3), 16));
-                            sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(4)));
-                            sb.append(String.format("%n"));
-                        } else if (result.size() == 4) {
-                            sb.append(String.format("%s", result.get(0)).substring(0, 8));
-                            sb.append(String.join("", Collections.nCopies(9 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(1)));
-                            sb.append(String.join("", Collections.nCopies(24 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(2), 4));
-                            sb.append(String.join("", Collections.nCopies(28 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(3), 27));
-                            sb.append(String.format("%n"));
-                        } else if (result.size() == 3) {
-                            sb.append(String.format("%s", result.get(0)).substring(0, 8));
-                            sb.append(String.join("", Collections.nCopies(12 - sb.length(), " ")));
-                            sb.append(StringUtils.abbreviate(result.get(1), 16));
-                            sb.append(String.join("", Collections.nCopies(27 - sb.length(), " ")));
-                            sb.append(String.format("%s", result.get(2)));
-                            sb.append(String.format("%n"));
+                        StringBuilder mh = new StringBuilder();
+                        switch (result.size()) {
+                            case 3:
+                                sb.append(String.format("%s", result.get(0)).substring(0, 8));
+                                sb.append(String.join("", Collections.nCopies(12 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(1), 16));
+                                sb.append(String.join("", Collections.nCopies(27 - sb.length(), " ")));
+                                sb.append(result.get(2));
+                                sb.append(String.format("%n"));
+                                break;
+
+                            case 4:
+                                sb.append(String.format("%s", result.get(0)).substring(0, 8));
+                                sb.append(String.join("", Collections.nCopies(9 - sb.length(), " ")));
+                                sb.append(result.get(1));
+                                sb.append(String.join("", Collections.nCopies(24 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(2), 4));
+                                sb.append(String.join("", Collections.nCopies(28 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(3), 27));
+                                sb.append(String.format("%n"));
+                                break;
+
+                            case 6:
+                                int padding = 0;
+                                if (!mhh) {
+                                    mh.append("");
+                                    mh.append(String.join("", Collections.nCopies(6 - mh.length(), " ")));
+                                    mh.append("");
+                                    mh.append(String.join("", Collections.nCopies(10 - mh.length(), " ")));
+                                    mh.append("Min");
+                                    mh.append(String.join("", Collections.nCopies(25 - mh.length(), " ")));
+                                    mh.append("Max");
+                                    mh.append(String.join("", Collections.nCopies(40 - mh.length(), " ")));
+                                    mh.append("Average");
+                                    mh.append(String.join("", Collections.nCopies(55 - mh.length(), " ")));
+                                    mh.append(String.format("%n"));
+                                    mhh = true;
+                                    padding = mh.length();
+                                }
+                                mh.append(result.get(0));
+                                mh.append(String.join("", Collections.nCopies(6 - mh.length() + padding, " ")));
+                                mh.append(result.get(1));
+                                mh.append(String.join("", Collections.nCopies(10 - mh.length() + padding, " ")));
+                                mh.append(result.get(2));
+                                mh.append(String.join("", Collections.nCopies(25 - mh.length() + padding, " ")));
+                                mh.append(result.get(3));
+                                mh.append(String.join("", Collections.nCopies(40 - mh.length() + padding, " ")));
+                                mh.append(result.get(4));
+                                mh.append(String.join("", Collections.nCopies(55 - mh.length() + padding, " ")));
+                                mh.append(String.format("%n"));
+                                break;
+
+                            default:
+                                break;
                         }
 
                         sbu.append(sb.toString());
+                        mhu.append(mh.toString());
+                    }
+
+                    if (mhu.length() > 0) {
+                        EmbedBuilder mhBuilder = new EmbedBuilder();
+                        mhBuilder.withColor(128, 0, 128);
+                        mhBuilder.withTitle(String.format("Market History for %s", pageTitle));
+                        mhBuilder.withDescription("```haskell");
+                        mhBuilder.appendDescription(String.format("%n"));
+                        mhBuilder.appendDescription(mhu.toString());
+                        mhBuilder.appendDescription("```");
+                        resultList.add(0, mhBuilder.build());
                     }
 
                     if (sbu.length() > 0) {
