@@ -42,7 +42,7 @@ public class PcCommand implements Command {
             BotUtils.sendMessage(event.getChannel(), response);
             try {
                 // Sleep here to preserve order of outgoing messages
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 //Do nothing
                 Thread.interrupted();
