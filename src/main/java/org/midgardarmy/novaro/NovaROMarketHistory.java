@@ -148,7 +148,7 @@ public class NovaROMarketHistory extends NovaROMarket {
 
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
-                object.withTitle(String.format("Vendors Selling %s", pageTitle));
+                object.withTitle(String.format("Market History for %s", pageTitle));
                 object.withDescription("```haskell");
                 object.appendDescription(String.format("%n"));
 
