@@ -36,7 +36,10 @@ public class PythonCommand implements Command {
             BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             String stdErr = stdError.lines().collect(Collectors.joining(String.format("%n")));
             if (stdErr.length() > 0) {
-                BotUtils.sendMessage(event.getChannel(), createMessage(stdErr));
+                if (logger.isDebugEnabled()) {
+                    BotUtils.sendMessage(event.getChannel(), createMessage(stdErr));
+                    logger.debug("MVP Error: ", stdErr);
+                }
                 return;
             }
             String stdIn = stdInput.lines().collect(Collectors.joining(String.format("%n")));
@@ -47,7 +50,7 @@ public class PythonCommand implements Command {
             BotUtils.sendMessage(event.getChannel(), createMessage("No Errors Or Output"));
         } catch (IOException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("MVP Error: ", e);
+                logger.debug("Python Error: ", e);
             }
         }
     }

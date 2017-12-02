@@ -23,21 +23,23 @@ public class ShivtrClient {
     private static final String BASEURL = ConfigUtils.get("shivtr.url");
     private static final String LOGIN = "users/sign_in.json";
 
+    private static final String APPLICATIONS = "site_applications";
+
     private static final String TOKEN = postLogin();
 
     public static List<EmbedObject> getApplications() {
-        postLogin();
-        if (TOKEN == null && TOKEN.isEmpty()) {
-
+        if (TOKEN == null || TOKEN.isEmpty()) {
+            postLogin();
         }
         StringBuilder url = new StringBuilder();
         url.append(BASEURL);
         url.append("site_applications.json");
         try {
-            HttpResponse<JsonNode> response = Unirest.get(url.toString())
+            JsonNode response = Unirest.get(url.toString())
                     .header("accept", "application/json")
                     .queryString("token", TOKEN)
-                    .asJson();
+                    .asJson()
+                    .getBody();
         } catch (UnirestException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getApplications Error: ", e);

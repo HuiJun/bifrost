@@ -158,6 +158,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
                         StringBuilder mh = new StringBuilder();
+                        logger.debug("" + result.size());
                         switch (result.size()) {
                             case 3:
                                 sb.append(String.format("%s", result.get(0)).substring(0, 8));
@@ -185,7 +186,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                                     mh.append("");
                                     mh.append(String.join("", Collections.nCopies(6 - mh.length(), " ")));
                                     mh.append("");
-                                    mh.append(String.join("", Collections.nCopies(10 - mh.length(), " ")));
+                                    mh.append(String.join("", Collections.nCopies(12 - mh.length(), " ")));
                                     mh.append("Min");
                                     mh.append(String.join("", Collections.nCopies(25 - mh.length(), " ")));
                                     mh.append("Max");
@@ -199,7 +200,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                                 mh.append(result.get(0));
                                 mh.append(String.join("", Collections.nCopies(6 - mh.length() + padding, " ")));
                                 mh.append(result.get(1));
-                                mh.append(String.join("", Collections.nCopies(10 - mh.length() + padding, " ")));
+                                mh.append(String.join("", Collections.nCopies(12 - mh.length() + padding, " ")));
                                 mh.append(result.get(2));
                                 mh.append(String.join("", Collections.nCopies(25 - mh.length() + padding, " ")));
                                 mh.append(result.get(3));
