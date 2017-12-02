@@ -38,9 +38,15 @@ public class PcCommand implements Command {
         }
 
         commandCache.put(cacheKey, cache);
-
         for (EmbedObject response : responses) {
             BotUtils.sendMessage(event.getChannel(), response);
+            try {
+                // Sleep here to preserve order of outgoing messages
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                //Do nothing
+                Thread.interrupted();
+            }
         }
     }
 }
