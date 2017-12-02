@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -34,9 +35,9 @@ import sx.blah.discord.util.EmbedBuilder;
 
 import org.midgardarmy.utils.ConfigUtils;
 
-public class NovaROClient {
+public class NovaROMarket {
 
-    private static final Logger logger = LoggerFactory.getLogger(NovaROClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(NovaROMarket.class);
 
     public static final String NOVARO_USER = ConfigUtils.get("novaro.user");
     public static final String NOVARO_PASS = ConfigUtils.get("novaro.pass");
@@ -44,14 +45,15 @@ public class NovaROClient {
     public static final String BASEURL = "https://www.novaragnarok.com/";
     public static final String LOGIN = "module=account&action=login";
 
-    public static final List<NameValuePair> SEARCH;
+    static final List<NameValuePair> SEARCH;
     static {
         SEARCH = new ArrayList<>();
         SEARCH.add(new BasicNameValuePair("module", "item"));
         SEARCH.add(new BasicNameValuePair("action", "index"));
         SEARCH.add(new BasicNameValuePair("type", "-1"));
     }
-    public static final List<NameValuePair> ITEM;
+
+    private static final List<NameValuePair> ITEM;
     static {
         ITEM = new ArrayList<>();
         ITEM.add(new BasicNameValuePair("module", "vending"));
@@ -62,7 +64,7 @@ public class NovaROClient {
 
     private static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
-    public static synchronized List<EmbedObject> getByName(String name, int page, Map<String, String> cache) {
+    public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty()) {
@@ -70,6 +72,9 @@ public class NovaROClient {
             }
 
             int refine = 0;
+
+            String name = cache.get("itemName");
+            int page = Integer.parseInt(cache.get("pageNum"));
 
             if (name.startsWith("+")) {
                 int space = name.indexOf(' ');
@@ -104,27 +109,12 @@ public class NovaROClient {
             object.withTitle("Search Results");
             object.withDescription("```haskell");
             object.appendDescription(String.format("%n"));
-            int itemCount = 0;
-            String currentId = "";
-            for (List<String> item : items) {
-                if (item.size() == 4) {
-                    StringBuilder sb = new StringBuilder();
 
-                    sb.append(String.format("%sws %s", BotUtils.BOT_PREFIX, item.get(0)));
-                    sb.append(String.join("", Collections.nCopies(12 - sb.length(), " ")));
-                    sb.append(item.get(2));
-                    sb.append(' ');
-                    sb.append(String.format("(%s)", item.get(3)));
-
-                    object.appendDescription(String.format("%s%n", StringUtils.abbreviate(sb.toString(), 60)));
-                    itemCount++;
-                    currentId = item.get(0);
-                }
-            }
-
+            StringBuilder currentId = new StringBuilder();
+            int itemCount = processSearchResults(object, "ws", items, currentId);
             if (itemCount == 1) {
-                cache.put("itemName", currentId);
-                return getById(Arrays.asList(currentId), 1, refine);
+                cache.put("itemName", currentId.toString());
+                return getById(Arrays.asList(currentId.toString().split(" ")), 1, refine);
             } else if (itemCount == 0) {
                 object.appendDescription(NO_RESULTS_MESSAGE);
             }
@@ -132,7 +122,7 @@ public class NovaROClient {
             object.appendDescription(String.format("%n"));
             object.appendDescription("```");
 
-            addFooter(object, page, pageNum);
+            addFooter(object, "ws", page, pageNum);
 
             resultList.add(object.build());
             return resultList;
@@ -234,7 +224,7 @@ public class NovaROClient {
 
                 object.appendDescription(String.format("%n"));
                 object.appendDescription("```");
-                addFooter(object, page, pageNum);
+                addFooter(object, "ws", page, pageNum);
 
                 resultList.add(object.build());
             } catch (Exception e) {
@@ -253,7 +243,7 @@ public class NovaROClient {
         return resultList;
     }
 
-    private static List<List<String>> extractIDs(Document xmlDocument) {
+    static List<List<String>> extractIDs(Document xmlDocument) {
         List<List<String>> result = new ArrayList<>();
 
         try {
@@ -291,7 +281,7 @@ public class NovaROClient {
         return result;
     }
 
-    private static List<List<String>> extractData(Document xmlDocument) {
+    static List<List<String>> extractData(Document xmlDocument) {
         List<List<String>> result = new ArrayList<>();
 
         try {
@@ -352,7 +342,7 @@ public class NovaROClient {
         return result;
     }
 
-    private static List<String> getDeepestValues(Node node) {
+    static List<String> getDeepestValues(Node node) {
         List<String> results = new ArrayList<>();
         for (int k = 0; k < node.getChildNodes().getLength(); k++) {
             Node child = node.getChildNodes().item(k);
@@ -366,7 +356,7 @@ public class NovaROClient {
         return results;
     }
 
-    private static String getItemTitle(Document xmlDocument) {
+    static String getItemTitle(Document xmlDocument) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String title = "//span[contains(@class, 'tooltip')]/a";
@@ -386,7 +376,7 @@ public class NovaROClient {
         return "Unknown";
     }
 
-    private static int getPages(Document xmlDocument) {
+    static int getPages(Document xmlDocument) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String pageNums = "//div[contains(@class, 'pages')]/a[contains(@class, 'page-num')]";
@@ -407,21 +397,40 @@ public class NovaROClient {
         return 1;
     }
 
-    private static void addFooter(EmbedBuilder object, int page, int pageNum) {
-        if (pageNum > 11) {
-            object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, "+10", BotUtils.BOT_PREFIX));
+    static int processSearchResults(EmbedBuilder object, String command, List<List<String>> items, StringBuilder currentId) {
+        int count = 0;
+        for (List<String> item : items) {
+            if (item.size() == 4) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(String.format("%s%s %s", BotUtils.BOT_PREFIX, command, item.get(0)));
+                sb.append(String.join("", Collections.nCopies(12 - sb.length(), " ")));
+                sb.append(item.get(2));
+                sb.append(' ');
+                sb.append(String.format("(%s)", item.get(3)));
+
+                object.appendDescription(String.format("%s%n", StringUtils.abbreviate(sb.toString(), 60)));
+                count++;
+                currentId.append(item.get(0));
+            }
+        }
+        return count;
+    }
+
+    static void addFooter(EmbedBuilder object, String command, int page, int pageNum) {
+        if (pageNum > 10) {
+            object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, "10+", BotUtils.BOT_PREFIX, command));
         } else {
             if (pageNum > 1) {
                 if (page == 1) {
-                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next or %3$s%4$s page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX, command));
                 } else if (page < pageNum) {
-                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws next, %3$sws prev or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX, command));
                 } else if (page == pageNum) {
-                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$sws prev or %3$sws page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX));
+                    object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, String.format("%d", pageNum), BotUtils.BOT_PREFIX, command));
                 }
             } else {
                 if (pageNum == 0) {
-                    object.withFooterText(String.format("You went too far, use %1$sws prev or %1$sws page [page number] to go back", BotUtils.BOT_PREFIX));
+                    object.withFooterText(String.format("You went too far, use %1$s%2$s prev or %1$s%2$s page [page number] to go back", BotUtils.BOT_PREFIX, command));
                 } else {
                     object.withFooterText(String.format("Page %1$d of %2$s", page, String.format("%d", pageNum)));
                 }
@@ -429,7 +438,7 @@ public class NovaROClient {
         }
     }
 
-    private static HttpResponse<String> getHTML(String url) throws UnirestException {
+    static HttpResponse<String> getHTML(String url) throws UnirestException {
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
                 .build());
@@ -438,7 +447,7 @@ public class NovaROClient {
                 .asString();
     }
 
-    private static void postLogin() throws UnirestException {
+    static void postLogin() throws UnirestException {
         String url = String.format("%s?%s", BASEURL, LOGIN);
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
@@ -452,6 +461,6 @@ public class NovaROClient {
                 .asString();
     }
 
-    private NovaROClient() {}
+    NovaROMarket() {}
 
 }

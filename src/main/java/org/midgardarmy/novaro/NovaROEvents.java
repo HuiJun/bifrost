@@ -23,7 +23,7 @@ import static com.cronutils.model.CronType.QUARTZ;
 
 public class NovaROEvents {
 
-    private static final Logger logger = LoggerFactory.getLogger(NovaROClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(NovaROMarket.class);
 
     private static final int PADDING = 4;
 
