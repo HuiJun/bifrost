@@ -430,7 +430,7 @@ public class NovaROMarket {
         } else {
             if (pageNum > 1) {
                 if (page == 1) {
-                    object.withFooterText(String.format("Page 1 of %2$d (Use %3$s%4$s next or %3$s%4$s page [page number] to navigate)", pageNum, BotUtils.BOT_PREFIX, command));
+                    object.withFooterText(String.format("Page 1 of %1$d (Use %2$s%3$s next or %2$s%3$s page [page number] to navigate)", pageNum, BotUtils.BOT_PREFIX, command));
                 } else if (page < pageNum) {
                     object.withFooterText(String.format("Page %1$d of %2$d (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, pageNum, BotUtils.BOT_PREFIX, command));
                 } else if (page == pageNum) {
