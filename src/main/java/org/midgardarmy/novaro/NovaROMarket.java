@@ -437,10 +437,10 @@ public class NovaROMarket {
                     object.withFooterText(String.format("Page %1$d of %2$d (Use %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, pageNum, BotUtils.BOT_PREFIX, command));
                 }
             } else {
-                if (pageNum == 0) {
+                if (pageNum == 0 && page > 1) {
                     object.withFooterText("Well, that sucked. You probably did something wrong.");
                 } else {
-                    object.withFooterText(String.format("Page %1$d of %2$d", page > 1 ? page : 1, pageNum));
+                    object.withFooterText("Page 1 of 1");
                 }
             }
         }
