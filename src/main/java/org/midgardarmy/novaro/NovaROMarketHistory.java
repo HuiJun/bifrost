@@ -3,9 +3,7 @@ package org.midgardarmy.novaro;
 import com.mashape.unirest.http.HttpResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +30,11 @@ public class NovaROMarketHistory extends NovaROMarket {
         ITEMHISTORY.add(new BasicNameValuePair("action", "itemhistory"));
     }
 
-    private static CookieStore cookieStore = new BasicCookieStore();
-
     public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
-            if (cookieStore.getCookies().isEmpty()) {
-                NovaROMarket.postLogin();
+            if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
+                postLogin();
             }
 
             int refine = 0;
@@ -61,7 +57,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                 searchList.add(new BasicNameValuePair("p", Integer.toString(page)));
             }
             b.addParameters(searchList);
-            HttpResponse<String> searchResult = NovaROMarket.getHTML(b.toString());
+            HttpResponse<String> searchResult = getHTML(b.toString());
 
             Tidy tidy = new Tidy();
             tidy.setQuiet(true);
@@ -71,7 +67,7 @@ public class NovaROMarketHistory extends NovaROMarket {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
             Document xmlDocument = tidy.parseDOM(inputStream, null);
 
-            List<List<String>> items = NovaROMarket.extractIDs(xmlDocument);
+            List<List<String>> items = extractIDs(xmlDocument);
             int pageNum = NovaROMarket.getPages(xmlDocument);
 
             EmbedBuilder object = new EmbedBuilder();
@@ -93,7 +89,7 @@ public class NovaROMarketHistory extends NovaROMarket {
             object.appendDescription(String.format("%n"));
             object.appendDescription("```");
 
-            NovaROMarket.addFooter(object, "pc", page, pageNum);
+            addFooter(object, "pc", page, pageNum);
 
             resultList.add(object.build());
             return resultList;
@@ -111,8 +107,8 @@ public class NovaROMarketHistory extends NovaROMarket {
 
         for (String id : ids) {
             try {
-                if (cookieStore.getCookies().isEmpty()) {
-                    NovaROMarket.postLogin();
+                if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
+                    postLogin();
                 }
 
                 URIBuilder b = new URIBuilder(BASEURL);
@@ -129,7 +125,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                     itemList.add(new BasicNameValuePair("refine", Integer.toString(refine)));
                 }
                 b.addParameters(itemList);
-                HttpResponse<String> itemResult = NovaROMarket.getHTML(b.toString());
+                HttpResponse<String> itemResult = getHTML(b.toString());
 
                 Tidy tidy = new Tidy();
                 tidy.setQuiet(true);
@@ -139,7 +135,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes("UTF-8"));
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
 
-                List<List<String>> results = NovaROMarket.extractData(xmlDocument);
+                List<List<String>> results = extractData(xmlDocument);
 
                 String pageTitle = getItemTitle(xmlDocument);
                 int pageNum = getPages(xmlDocument);
@@ -158,7 +154,6 @@ public class NovaROMarketHistory extends NovaROMarket {
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
                         StringBuilder mh = new StringBuilder();
-                        logger.debug("" + result.size());
                         switch (result.size()) {
                             case 3:
                                 sb.append(String.format("%s", result.get(0)).substring(0, 8));

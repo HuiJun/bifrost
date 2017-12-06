@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
+import org.eclipse.jetty.http.HttpStatus;
 import org.midgardarmy.utils.BotUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,14 +62,14 @@ public class NovaROMarket {
         ITEM.add(new BasicNameValuePair("action", "item"));
     }
 
-    private static CookieStore cookieStore = new BasicCookieStore();
+    static CookieStore cookieStore = new BasicCookieStore();
 
     static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
     public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
-            if (cookieStore.getCookies().isEmpty()) {
+            if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
                 postLogin();
             }
 
@@ -91,6 +94,11 @@ public class NovaROMarket {
             }
             b.addParameters(searchList);
             HttpResponse<String> searchResult = getHTML(b.toString());
+
+            logger.debug(Integer.toString(searchResult.getStatus()));
+            if (searchResult.getStatus() != HttpStatus.OK_200) {
+                logger.debug(Integer.toString(searchResult.getStatus()));
+            }
 
             Tidy tidy = new Tidy();
             tidy.setQuiet(true);
@@ -139,7 +147,7 @@ public class NovaROMarket {
 
         for (String id : ids) {
             try {
-                if (cookieStore.getCookies().isEmpty()) {
+                if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
                     postLogin();
                 }
 
@@ -444,6 +452,20 @@ public class NovaROMarket {
                 }
             }
         }
+    }
+
+    static boolean isCookieExpired() {
+        boolean expired = false;
+        for (Cookie cookie : cookieStore.getCookies()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Name: %s, Domain: %s, Expires: %s", cookie.getName(), cookie.getDomain(), cookie.getExpiryDate().toString()));
+            }
+
+            if (cookie.getExpiryDate().before(new Date())) {
+                expired = true;
+            }
+        }
+        return expired;
     }
 
     static HttpResponse<String> getHTML(String url) throws UnirestException {
