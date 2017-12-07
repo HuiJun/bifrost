@@ -67,6 +67,11 @@ public class NovaROMarketHistory extends NovaROMarket {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
             Document xmlDocument = tidy.parseDOM(inputStream, null);
 
+            if (isLoginForm(xmlDocument)) {
+                postLogin();
+                xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+            }
+
             List<List<String>> items = extractIDs(xmlDocument);
             int pageNum = NovaROMarket.getPages(xmlDocument);
 
@@ -134,6 +139,11 @@ public class NovaROMarketHistory extends NovaROMarket {
 
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes("UTF-8"));
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
+
+                if (isLoginForm(xmlDocument)) {
+                    postLogin();
+                    xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+                }
 
                 List<List<String>> results = extractData(xmlDocument);
 

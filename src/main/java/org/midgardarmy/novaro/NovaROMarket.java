@@ -70,7 +70,7 @@ public class NovaROMarket {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
-                postLogin();
+                //postLogin();
             }
 
             int refine = 0;
@@ -95,11 +95,6 @@ public class NovaROMarket {
             b.addParameters(searchList);
             HttpResponse<String> searchResult = getHTML(b.toString());
 
-            logger.debug(Integer.toString(searchResult.getStatus()));
-            if (searchResult.getStatus() != HttpStatus.OK_200) {
-                logger.debug(Integer.toString(searchResult.getStatus()));
-            }
-
             Tidy tidy = new Tidy();
             tidy.setQuiet(true);
             tidy.setShowWarnings(false);
@@ -107,7 +102,10 @@ public class NovaROMarket {
 
             ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
             Document xmlDocument = tidy.parseDOM(inputStream, null);
-
+            if (isLoginForm(xmlDocument)) {
+                postLogin();
+                xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+            }
             List<List<String>> items = extractIDs(xmlDocument);
             int pageNum = getPages(xmlDocument);
 
@@ -176,6 +174,11 @@ public class NovaROMarket {
 
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes("UTF-8"));
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
+
+                if (isLoginForm(xmlDocument)) {
+                    postLogin();
+                    xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+                }
 
                 List<List<String>> results = extractData(xmlDocument);
                 String pageTitle = getItemTitle(xmlDocument);
@@ -466,6 +469,24 @@ public class NovaROMarket {
             }
         }
         return expired;
+    }
+
+    static boolean isLoginForm(Document xmlDocument) {
+        boolean loginRequired = false;
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            String loginForm = "//div[@id=\"login\"]/form";
+            Node node = (Node) xPath.compile(loginForm).evaluate(xmlDocument, XPathConstants.NODE);
+            if (node != null && node.getNodeName().equals("form")) {
+                loginRequired = true;
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("isLoginForm Error: ", e);
+            }
+        }
+
+        return loginRequired;
     }
 
     static HttpResponse<String> getHTML(String url) throws UnirestException {
