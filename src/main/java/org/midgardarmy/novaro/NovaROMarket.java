@@ -1,6 +1,7 @@
 package org.midgardarmy.novaro;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +24,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
-import org.eclipse.jetty.http.HttpStatus;
 import org.midgardarmy.utils.BotUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,25 +86,22 @@ public class NovaROMarket {
 
             URIBuilder b = new URIBuilder(BASEURL);
 
-            List<NameValuePair> searchList = new ArrayList<>();
-            searchList.addAll(SEARCH);
+            List<NameValuePair> searchList = new ArrayList<>(SEARCH);
             searchList.add(new BasicNameValuePair("name", name));
             if (page > 1) {
                 searchList.add(new BasicNameValuePair("p", Integer.toString(page)));
             }
             b.addParameters(searchList);
-            HttpResponse<String> searchResult = getHTML(b.toString());
 
             Tidy tidy = new Tidy();
             tidy.setQuiet(true);
             tidy.setShowWarnings(false);
             tidy.setShowErrors(0);
 
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
-            Document xmlDocument = tidy.parseDOM(inputStream, null);
-            if (isLoginForm(xmlDocument)) {
+            Document xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8)), null);
+            if (hasLoginForm(xmlDocument)) {
                 postLogin();
-                xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+                xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8)), null);
             }
             List<List<String>> items = extractIDs(xmlDocument);
             int pageNum = getPages(xmlDocument);
@@ -151,8 +148,7 @@ public class NovaROMarket {
 
                 URIBuilder b = new URIBuilder(BASEURL);
 
-                List<NameValuePair> itemList = new ArrayList<>();
-                itemList.addAll(ITEM);
+                List<NameValuePair> itemList = new ArrayList<>(ITEM);
                 itemList.add(new BasicNameValuePair("id", id));
 
                 if (page > 1) {
@@ -165,19 +161,17 @@ public class NovaROMarket {
                 }
 
                 b.addParameters(itemList);
-                HttpResponse<String> itemResult = getHTML(b.toString());
 
                 Tidy tidy = new Tidy();
                 tidy.setQuiet(true);
                 tidy.setShowWarnings(false);
                 tidy.setShowErrors(0);
 
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes("UTF-8"));
-                Document xmlDocument = tidy.parseDOM(inputStream, null);
+                Document xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8)), null);
 
-                if (isLoginForm(xmlDocument)) {
+                if (hasLoginForm(xmlDocument)) {
                     postLogin();
-                    xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+                    xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8)), null);
                 }
 
                 List<List<String>> results = extractData(xmlDocument);
@@ -471,7 +465,7 @@ public class NovaROMarket {
         return expired;
     }
 
-    static boolean isLoginForm(Document xmlDocument) {
+    static boolean hasLoginForm(Document xmlDocument) {
         boolean loginRequired = false;
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
@@ -482,7 +476,7 @@ public class NovaROMarket {
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("isLoginForm Error: ", e);
+                logger.debug("hasLoginForm Error: ", e);
             }
         }
 
@@ -498,7 +492,7 @@ public class NovaROMarket {
                 .asString();
     }
 
-    static void postLogin() throws UnirestException {
+    static synchronized void postLogin() throws UnirestException {
         String url = String.format("%s?%s", BASEURL, LOGIN);
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)

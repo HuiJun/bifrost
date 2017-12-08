@@ -13,6 +13,7 @@ import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,26 +51,24 @@ public class NovaROMarketHistory extends NovaROMarket {
 
             URIBuilder b = new URIBuilder(BASEURL);
 
-            List<NameValuePair> searchList = new ArrayList<>();
-            searchList.addAll(SEARCH);
+            List<NameValuePair> searchList = new ArrayList<>(SEARCH);
             searchList.add(new BasicNameValuePair("name", name));
             if (page > 1) {
                 searchList.add(new BasicNameValuePair("p", Integer.toString(page)));
             }
             b.addParameters(searchList);
-            HttpResponse<String> searchResult = getHTML(b.toString());
 
             Tidy tidy = new Tidy();
             tidy.setQuiet(true);
             tidy.setShowWarnings(false);
             tidy.setShowErrors(0);
 
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8));
             Document xmlDocument = tidy.parseDOM(inputStream, null);
 
-            if (isLoginForm(xmlDocument)) {
+            if (hasLoginForm(xmlDocument)) {
                 postLogin();
-                xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+                xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8)), null);
             }
 
             List<List<String>> items = extractIDs(xmlDocument);
@@ -118,8 +117,7 @@ public class NovaROMarketHistory extends NovaROMarket {
 
                 URIBuilder b = new URIBuilder(BASEURL);
 
-                List<NameValuePair> itemList = new ArrayList<>();
-                itemList.addAll(ITEMHISTORY);
+                List<NameValuePair> itemList = new ArrayList<>(ITEMHISTORY);
                 itemList.add(new BasicNameValuePair("id", id));
                 if (page > 1) {
                     itemList.add(new BasicNameValuePair("p", Integer.toString(page)));
@@ -137,12 +135,12 @@ public class NovaROMarketHistory extends NovaROMarket {
                 tidy.setShowWarnings(false);
                 tidy.setShowErrors(0);
 
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes("UTF-8"));
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(itemResult.getBody().getBytes(StandardCharsets.UTF_8));
                 Document xmlDocument = tidy.parseDOM(inputStream, null);
 
-                if (isLoginForm(xmlDocument)) {
+                if (hasLoginForm(xmlDocument)) {
                     postLogin();
-                    xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes("UTF-8")), null);
+                    xmlDocument = tidy.parseDOM(new ByteArrayInputStream(getHTML(b.toString()).getBody().getBytes(StandardCharsets.UTF_8)), null);
                 }
 
                 List<List<String>> results = extractData(xmlDocument);

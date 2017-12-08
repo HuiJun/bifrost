@@ -2,6 +2,7 @@ package org.midgardarmy.divinepride;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,8 +71,7 @@ public class DivinePrideClient {
             tidy.setXmlTags(true);
             tidy.setXmlOut(true);
 
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
-            Document xmlDocument = tidy.parseDOM(inputStream, null);
+            Document xmlDocument = tidy.parseDOM(new ByteArrayInputStream(searchResult.getBody().getBytes(StandardCharsets.UTF_8)), null);
 
             List<String> ids = extractIDs(xmlDocument);
             return getById(action, ids);
