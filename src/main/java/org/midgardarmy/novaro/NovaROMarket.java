@@ -70,7 +70,7 @@ public class NovaROMarket {
         List<EmbedObject> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
-                //postLogin();
+                postLogin();
             }
 
             int refine = 0;
