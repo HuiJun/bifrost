@@ -7,6 +7,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class WsCommand implements Command {
         if (!Character.isDigit(cache.get(ITEM_NAME).charAt(0))) {
             responses = NovaROMarket.getByName(cache);
         } else {
-            List<String> ids = Arrays.asList(cache.get(ITEM_NAME));
+            List<String> ids = Collections.singletonList(cache.get(ITEM_NAME));
             responses = NovaROMarket.getById(ids, Integer.parseInt(cache.get(PAGE_NUM)), 0);
         }
 

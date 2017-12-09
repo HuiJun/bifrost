@@ -119,7 +119,7 @@ public class DivinePrideClient {
         List<String> result = new ArrayList<>();
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String expression = "//div[@id=\"target-1\"]//table/tbody/tr/td/a/@href";
+            String expression = "//table/tbody/tr/td/a/@href";
             NodeList nodes = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
             for (int i = 0; i < nodes.getLength(); i++) {
                 result.add(extractIDString(nodes.item(i).getNodeValue()));

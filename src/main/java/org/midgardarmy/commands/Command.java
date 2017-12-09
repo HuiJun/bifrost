@@ -8,6 +8,7 @@ import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedE
 
 public interface Command {
 
+    Map<String, String> commandMap = new HashMap<>();
     Map<String, List<String>> helpMap = new HashMap<>();
 
     static final String ITEM_NAME = "itemName";
