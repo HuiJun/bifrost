@@ -23,20 +23,22 @@ public class BotUtils {
                 .build();
     }
 
-    public static void sendMessage(IChannel channel, Object message){
-        RequestBuffer.request(() -> {
-            try{
-                if (message instanceof EmbedObject) {
-                    channel.sendMessage((EmbedObject) message);
-                } else {
-                    channel.sendMessage((String) message);
-                }
-            } catch (DiscordException e){
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Message could not be sent with error: ", e);
-                }
+    public static synchronized void sendMessage(IChannel channel, Object message){
+        RequestBuffer.request(() -> parseMessage(channel, message));
+    }
+
+    private static synchronized void parseMessage(IChannel channel, Object message) {
+        try {
+            if (message instanceof EmbedObject) {
+                channel.sendMessage((EmbedObject) message);
+            } else {
+                channel.sendMessage((String) message);
             }
-        });
+        } catch (DiscordException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Message could not be sent with error: ", e);
+            }
+        }
     }
 
     private BotUtils() {}

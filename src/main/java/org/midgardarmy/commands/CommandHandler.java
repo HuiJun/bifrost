@@ -35,6 +35,7 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
     static {
         commandMap.put("char", new CharCommand());
         commandMap.put("events", new EventsCommand());
+        commandMap.put("forums", new ForumsCommand());
         commandMap.put("help", new HelpCommand());
         commandMap.put("ii", new IiCommand());
         commandMap.put("map", new MapCommand());

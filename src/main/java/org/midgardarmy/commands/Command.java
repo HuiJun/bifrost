@@ -11,8 +11,8 @@ public interface Command {
     Map<String, String> commandMap = new HashMap<>();
     Map<String, List<String>> helpMap = new HashMap<>();
 
-    static final String ITEM_NAME = "itemName";
-    static final String PAGE_NUM = "pageNum";
+    String ITEM_NAME = "itemName";
+    String PAGE_NUM = "pageNum";
 
     // Interface for a command to be implemented in the command map
     void runCommand(MessageReceivedEvent event, List<String> args);
@@ -35,9 +35,8 @@ public interface Command {
                     pageNum = 1;
                 }
             } else if (itemName.startsWith("page")) {
-                String command = itemName;
                 parsedItemName.append(previousCommand.get(ITEM_NAME));
-                pageNum = Integer.parseInt(command.substring(5));
+                pageNum = Integer.parseInt(itemName.substring(5));
             }
         }
 

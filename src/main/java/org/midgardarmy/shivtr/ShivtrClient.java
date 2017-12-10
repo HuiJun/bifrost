@@ -1,17 +1,16 @@
 package org.midgardarmy.shivtr;
 
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.midgardarmy.utils.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ShivtrClient {
 
@@ -19,50 +18,34 @@ public class ShivtrClient {
 
     private static final String SHIVTR_USERNAME = ConfigUtils.get("shivtr.user");
     private static final String SHIVTR_PASSWORD = ConfigUtils.get("shivtr.pass");
-
-    private static final String BASEURL = ConfigUtils.get("shivtr.url");
     private static final String LOGIN = "users/sign_in.json";
 
-    private static final String APPLICATIONS = "site_applications";
+    protected static final String BASEURL = ConfigUtils.get("shivtr.url");
 
-    private static final String TOKEN = postLogin();
-
-    public static List<EmbedObject> getApplications() {
-        if (TOKEN == null || TOKEN.isEmpty()) {
-            postLogin();
-        }
-        StringBuilder url = new StringBuilder();
-        url.append(BASEURL);
-        url.append("site_applications.json");
-        try {
-            JsonNode response = Unirest.get(url.toString())
-                    .header("accept", "application/json")
-                    .queryString("token", TOKEN)
-                    .asJson()
-                    .getBody();
-        } catch (UnirestException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("getApplications Error: ", e);
-            }
-        }
-        return new ArrayList<EmbedObject>();
-    }
-
-    private static String postLogin() {
+    protected static String postLogin() {
         StringBuilder url = new StringBuilder();
         url.append(BASEURL);
         url.append(LOGIN);
         JSONObject json = new JSONObject().put("user", new JSONObject().put("email", SHIVTR_USERNAME).put("password", SHIVTR_PASSWORD));
 
         try {
-            return Unirest.post(url.toString())
+            JsonNode resultJson = Unirest.post(url.toString())
                     .header("accept", "application/json")
                     .header("Content-Type", "application/json")
                     .body(json)
                     .asJson()
-                    .getBody()
-                    .getObject()
-                    .optString("authentication_token", null);
+                    .getBody();
+
+            String result = resultJson.getObject().optJSONObject("user_session").optString("authentication_token", null);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Login URL: " + url.toString());
+                logger.debug("Login body: " + json.toString());
+                logger.debug("Login result: " + resultJson.toString());
+                logger.debug("Login Token: " + result);
+            }
+
+            return result;
         } catch (UnirestException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("PostLogin Error: ", e);
@@ -72,6 +55,16 @@ public class ShivtrClient {
         return null;
     }
 
-    private ShivtrClient() {}
+    protected static Map<Integer, String> convertJSONArrayToMap(JSONArray json) {
+        Map<Integer, String> result = new HashMap<>();
+        for (int i = 0; i < json.length(); i++) {
+            JSONObject obj = json.getJSONObject(i);
+            result.put(obj.getInt("id"), obj.getString("name"));
+        }
+
+        return result;
+    }
+
+    public ShivtrClient() {}
 
 }
