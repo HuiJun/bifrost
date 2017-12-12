@@ -140,11 +140,12 @@ public class NovaROMarket {
     public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
         List<EmbedObject> resultList = new ArrayList<>();
 
+        if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
+            postLogin();
+        }
+
         for (String id : ids) {
             try {
-                if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
-                    postLogin();
-                }
 
                 URIBuilder b = new URIBuilder(BASEURL);
 
@@ -466,13 +467,12 @@ public class NovaROMarket {
     }
 
     static boolean hasLoginForm(Document xmlDocument) {
-        boolean loginRequired = false;
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String loginForm = "//div[@id=\"login\"]/form";
             Node node = (Node) xPath.compile(loginForm).evaluate(xmlDocument, XPathConstants.NODE);
             if (node != null && node.getNodeName().equals("form")) {
-                loginRequired = true;
+                return true;
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
@@ -480,7 +480,7 @@ public class NovaROMarket {
             }
         }
 
-        return loginRequired;
+        return false;
     }
 
     static HttpResponse<String> getHTML(String url) throws UnirestException {
