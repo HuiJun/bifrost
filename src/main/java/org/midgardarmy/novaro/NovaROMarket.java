@@ -140,12 +140,12 @@ public class NovaROMarket {
     public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
         List<EmbedObject> resultList = new ArrayList<>();
 
-        if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
-            postLogin();
-        }
-
         for (String id : ids) {
             try {
+
+                if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
+                    postLogin();
+                }
 
                 URIBuilder b = new URIBuilder(BASEURL);
 
@@ -453,6 +453,9 @@ public class NovaROMarket {
     }
 
     static boolean isCookieExpired() {
+        if (cookieStore == null) {
+            return true;
+        }
         boolean expired = false;
         for (Cookie cookie : cookieStore.getCookies()) {
             if (logger.isDebugEnabled()) {
