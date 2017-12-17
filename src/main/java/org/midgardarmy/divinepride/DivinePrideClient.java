@@ -100,7 +100,9 @@ public class DivinePrideClient {
                 if (results.getBody() != null) {
                     object = (EmbedBuilder) method.invoke(null, results.getBody());
                 }
-                resultList.add(object.build());
+                if (object != null) {
+                    resultList.add(object.build());
+                }
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("getById: ", e);

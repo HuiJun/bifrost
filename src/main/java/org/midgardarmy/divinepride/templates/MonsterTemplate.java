@@ -100,8 +100,12 @@ public class MonsterTemplate extends BaseTemplate {
         JSONArray dropsArr = root.optJSONArray("drops");
         JSONArray spawnArr = root.optJSONArray("spawn");
 
+        if (stats.optInt("level", 0) < 1) {
+            return null;
+        }
+
         StringBuilder dropList = new StringBuilder();
-        Map<String, String> dropMap = new TreeMap<>(Collections.reverseOrder());
+        ArrayList<String> dropArrayList = new ArrayList<>();
         if (dropsArr != null) {
             List<Integer> ids = new ArrayList<>();
             Map<Integer, Integer> dropChanceMap = new HashMap<>();
@@ -116,11 +120,26 @@ public class MonsterTemplate extends BaseTemplate {
 
             if (!ids.isEmpty()) {
                 Map<Integer, Map<String, Object>> items = DataUtils.getItemsByIDs(ids);
+                ArrayList<Integer> compareList = new ArrayList<>();
                 for (Map.Entry<Integer, Map<String, Object>> entry : items.entrySet()) {
                     Integer itemId = entry.getKey();
                     Map<String, Object> item = entry.getValue();
-                    String dropChance = String.format("%.2f", modifyDropRate(dropChanceMap.getOrDefault(itemId, 0) / 100.00f));
-                    dropMap.put(dropChance, String.format("* %s (%d) - %s%%%n", item.getOrDefault("name", "Unknown"), itemId, dropChance));
+                    int dropChanceRaw = dropChanceMap.getOrDefault(itemId, 0);
+                    int index = 0;
+                    if (compareList.isEmpty()) {
+                        compareList.add(dropChanceRaw);
+                    } else {
+                        for (int i = 0; i < compareList.size(); i++) {
+                            Integer key = compareList.get(i);
+                            if (key > dropChanceRaw) {
+                                index = i;
+                                compareList.add(i, dropChanceRaw);
+                                break;
+                            }
+                        }
+                    }
+                    String dropChance = String.format("%.2f", modifyDropRate(dropChanceRaw / 100.00f));
+                    dropArrayList.add(index, String.format("* %s (%d) - %s%%%n", item.getOrDefault("name", "Unknown"), itemId, dropChance));
                 }
 
                 ids.removeAll(items.keySet());
@@ -131,8 +150,9 @@ public class MonsterTemplate extends BaseTemplate {
 
                 dropList.append("```haskell");
                 dropList.append(String.format("%n"));
-                for (Map.Entry<String, String> drop : dropMap.entrySet()) {
-                    dropList.append(drop.getValue());
+                Collections.reverse(dropArrayList);
+                for (String drop : dropArrayList) {
+                    dropList.append(drop);
                 }
                 dropList.append(String.format("%n"));
                 dropList.append("```");
@@ -238,6 +258,10 @@ public class MonsterTemplate extends BaseTemplate {
     }
 
     private static float roundDecimal(float num) {
+        Float floatObj = num;
+        if (floatObj.isInfinite()) {
+            return 0;
+        }
         BigDecimal bd = new BigDecimal(Float.toString(num));
         bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
         return bd.floatValue();
