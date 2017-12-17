@@ -1,6 +1,7 @@
 package org.midgardarmy.commands;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -20,16 +21,35 @@ public class PythonCommand implements Command {
 
     @Override
     public void runCommand(MessageReceivedEvent event, List<String> args) {
+        String script = ConfigUtils.get("bifrost.mvpbot.location");
+
+        File file = new File(script);
+
+        if (!file.exists()) {
+            BotUtils.sendMessage(event.getChannel(), createMessage("File not found."));
+            return;
+        }
+
+        String python = ConfigUtils.get("bifrost.python");
+        String[] argArray = event.getMessage().getContent().split(" ");
+
+        String commandStr = argArray[0].substring(BotUtils.BOT_PREFIX.length());
+        List<String> argsList = new ArrayList<>(Arrays.asList(argArray));
+        argsList.set(0, commandStr);
+        String arguments = String.join(" ", argsList);
+
+        String filePath = file.getAbsolutePath();
+        String directory = filePath.substring(0, filePath.lastIndexOf(File.separator));
+
         try {
-            String script = ConfigUtils.get("bifrost.mvpbot.location");
-            String python = ConfigUtils.get("bifrost.python");
-            String[] argArray = event.getMessage().getContent().split(" ");
+            Runtime.getRuntime().exec(String.format("git -C '%s' pull;", directory));
+        } catch (IOException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Git Error: ", e);
+            }
+        }
 
-            String commandStr = argArray[0].substring(BotUtils.BOT_PREFIX.length());
-            List<String> argsList = new ArrayList<>(Arrays.asList(argArray));
-            argsList.set(0, commandStr);
-            String arguments = String.join(" ", argsList);
-
+        try {
             Process p = Runtime.getRuntime().exec(String.format("%s %s %s", python, script, arguments));
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
