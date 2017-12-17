@@ -458,12 +458,7 @@ public class NovaROMarket {
         }
         boolean expired = false;
         for (Cookie cookie : cookieStore.getCookies()) {
-            if (logger.isDebugEnabled() && cookie != null) {
-                logger.debug(String.format("Name: %s, Domain: %s, Expires: %s", cookie.getName(), cookie.getDomain(), cookie.getExpiryDate().toString()));
-            }
-            if (cookie == null) {
-                expired = true;
-            } else if (cookie.getExpiryDate().before(new Date())) {
+            if (cookie == null || cookie.getExpiryDate().before(new Date())) {
                 expired = true;
             }
         }
