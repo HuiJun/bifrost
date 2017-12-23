@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -13,16 +12,9 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicNameValuePair;
 import org.midgardarmy.utils.BotUtils;
 import org.slf4j.Logger;
@@ -35,17 +27,9 @@ import org.w3c.tidy.Tidy;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
 
-import org.midgardarmy.utils.ConfigUtils;
-
-public class NovaROMarket {
+public class NovaROMarket extends NovaROClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NovaROMarket.class);
-
-    public static final String NOVARO_USER = ConfigUtils.get("novaro.user");
-    public static final String NOVARO_PASS = ConfigUtils.get("novaro.pass");
-
-    public static final String BASEURL = "https://www.novaragnarok.com/";
-    public static final String LOGIN = "module=account&action=login";
 
     static final List<NameValuePair> SEARCH;
     static {
@@ -61,10 +45,6 @@ public class NovaROMarket {
         ITEM.add(new BasicNameValuePair("module", "vending"));
         ITEM.add(new BasicNameValuePair("action", "item"));
     }
-
-    static CookieStore cookieStore = new BasicCookieStore();
-
-    static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
     public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
         List<EmbedObject> resultList = new ArrayList<>();
@@ -351,25 +331,11 @@ public class NovaROMarket {
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("extractIDs Error: ", e);
+                logger.debug("extractData Error: ", e);
             }
         }
 
         return result;
-    }
-
-    static List<String> getDeepestValues(Node node) {
-        List<String> results = new ArrayList<>();
-        for (int k = 0; k < node.getChildNodes().getLength(); k++) {
-            Node child = node.getChildNodes().item(k);
-            if (child.getChildNodes().getLength() > 0) {
-                results.addAll(getDeepestValues(child));
-            } else {
-                results.add(child.getNodeValue());
-            }
-        }
-
-        return results;
     }
 
     static String getItemTitle(Document xmlDocument) {
@@ -450,59 +416,6 @@ public class NovaROMarket {
                 }
             }
         }
-    }
-
-    static boolean isCookieExpired() {
-        if (cookieStore == null) {
-            return true;
-        }
-        boolean expired = false;
-        for (Cookie cookie : cookieStore.getCookies()) {
-            if (cookie == null || cookie.getExpiryDate() == null || cookie.getExpiryDate().before(new Date())) {
-                expired = true;
-            }
-        }
-        return expired;
-    }
-
-    static boolean hasLoginForm(Document xmlDocument) {
-        try {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            String loginForm = "//div[@id=\"login\"]/form";
-            Node node = (Node) xPath.compile(loginForm).evaluate(xmlDocument, XPathConstants.NODE);
-            if (node != null && node.getNodeName().equals("form")) {
-                return true;
-            }
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("hasLoginForm Error: ", e);
-            }
-        }
-
-        return false;
-    }
-
-    static HttpResponse<String> getHTML(String url) throws UnirestException {
-        Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
-                .setDefaultCookieStore(cookieStore)
-                .build());
-        return Unirest.get(url)
-                .header("accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,*/*;q=0.5")
-                .asString();
-    }
-
-    static synchronized void postLogin() throws UnirestException {
-        String url = String.format("%s?%s", BASEURL, LOGIN);
-        Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
-                .setDefaultCookieStore(cookieStore)
-                .build());
-        Unirest.post(url)
-                .header("accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,*/*;q=0.5")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .field("username", NOVARO_USER)
-                .field("password", NOVARO_PASS)
-                .field("server", "NovaRO")
-                .asString();
     }
 
     NovaROMarket() {}

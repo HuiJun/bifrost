@@ -33,10 +33,21 @@ public class ConfigUtils {
     }
 
     public static String get(String key) {
+        return getString(key);
+    }
+
+    public static String getString(String key) {
         if (ConfigUtils.properties.isEmpty()) {
             init();
         }
         return ConfigUtils.properties.getProperty(key);
+    }
+
+    public static int getInt(String key) {
+        if (ConfigUtils.properties.isEmpty()) {
+            init();
+        }
+        return Integer.parseInt(ConfigUtils.properties.getProperty(key));
     }
 
     public static void setProperty(String key, String value) {

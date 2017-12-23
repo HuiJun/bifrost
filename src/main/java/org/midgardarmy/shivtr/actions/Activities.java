@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-public class Forums extends ShivtrClient {
+public class Activities extends ShivtrClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(Forums.class);
+    private static final Logger logger = LoggerFactory.getLogger(Activities.class);
 
     private static final String FORUMS = "forums";
     private static final String FORUM_THREADS = "forum_threads";

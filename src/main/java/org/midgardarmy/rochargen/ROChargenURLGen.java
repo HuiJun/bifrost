@@ -19,21 +19,20 @@ public class ROChargenURLGen {
 
     private static final Logger logger = LoggerFactory.getLogger(ROChargenURLGen.class);
 
-    private static final String NEWSIG = "newsig/";
-    private static final String CHAR = "char/";
+    private static final String BASEURL = ConfigUtils.get("rochargen.url");
 
-    private static final String SIGURL = ConfigUtils.get("rochargen.url") + NEWSIG + "%s/%d/%d";
-    private static final String CHARURL = ConfigUtils.get("rochargen.url") + CHAR + "%s/%d/%d";
+    private static final String SIGURL = BASEURL + (!BASEURL.substring(BASEURL.length() - 1).equals("/") ? "/" : "" ) + "newsig/%s/%d/%d";
+    private static final String CHARURL = BASEURL + (!BASEURL.substring(BASEURL.length() - 1).equals("/") ? "/" : "" ) + "char/%s/%d/%d";
 
-    private static final int BG_MIN = Integer.parseInt(ConfigUtils.get("rochargen.bg.min"));
-    private static final int BG_MAX = Integer.parseInt(ConfigUtils.get("rochargen.bg.max"));
-    private static final int POS_MIN = Integer.parseInt(ConfigUtils.get("rochargen.pos.min"));
-    private static final int POS_MAX = Integer.parseInt(ConfigUtils.get("rochargen.pos.max"));
+    private static final int BG_MIN = ConfigUtils.getInt("rochargen.bg.min");
+    private static final int BG_MAX = ConfigUtils.getInt("rochargen.bg.max");
+    private static final int POS_MIN = ConfigUtils.getInt("rochargen.pos.min");
+    private static final int POS_MAX = ConfigUtils.getInt("rochargen.pos.max");
 
-    private static final int ROTATE_MIN = Integer.parseInt(ConfigUtils.get("rochargen.rotate.min"));
-    private static final int ROTATE_MAX = Integer.parseInt(ConfigUtils.get("rochargen.rotate.max"));
-    private static final int POSE_MIN = Integer.parseInt(ConfigUtils.get("rochargen.pose.min"));
-    private static final int POSE_MAX = Integer.parseInt(ConfigUtils.get("rochargen.pose.max"));
+    private static final int ROTATE_MIN = ConfigUtils.getInt("rochargen.rotate.min");
+    private static final int ROTATE_MAX = ConfigUtils.getInt("rochargen.rotate.max");
+    private static final int POSE_MIN = ConfigUtils.getInt("rochargen.pose.min");
+    private static final int POSE_MAX = ConfigUtils.getInt("rochargen.pose.max");
 
     public static EmbedObject generateSig(String charName) {
         int bgID = ThreadLocalRandom.current().nextInt(BG_MIN, BG_MAX + 1);

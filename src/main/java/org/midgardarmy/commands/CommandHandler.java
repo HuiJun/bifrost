@@ -46,6 +46,7 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
         commandMap.put("pc", new PcCommand());
         commandMap.put("sig", new SigCommand());
         commandMap.put("ws", new WsCommand());
+        commandMap.put("zeny", new ZenyCommand());
     }
 
     @Override
