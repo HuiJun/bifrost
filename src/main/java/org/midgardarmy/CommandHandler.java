@@ -1,4 +1,4 @@
-package org.midgardarmy.commands;
+package org.midgardarmy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.midgardarmy.commands.CharCommand;
+import org.midgardarmy.commands.Command;
+import org.midgardarmy.commands.EventsCommand;
+import org.midgardarmy.commands.ForumsCommand;
+import org.midgardarmy.commands.HelpCommand;
+import org.midgardarmy.commands.IiCommand;
+import org.midgardarmy.commands.MapCommand;
+import org.midgardarmy.commands.MiCommand;
+import org.midgardarmy.commands.PcCommand;
+import org.midgardarmy.commands.PythonCommand;
+import org.midgardarmy.commands.SigCommand;
+import org.midgardarmy.commands.WsCommand;
+import org.midgardarmy.commands.ZenyCommand;
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IMessage;

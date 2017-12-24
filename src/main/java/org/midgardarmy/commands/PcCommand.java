@@ -1,6 +1,6 @@
 package org.midgardarmy.commands;
 
-import org.midgardarmy.novaro.NovaROMarketHistory;
+import org.midgardarmy.novaro.actions.NovaROMarketHistory;
 import org.midgardarmy.utils.BotUtils;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;

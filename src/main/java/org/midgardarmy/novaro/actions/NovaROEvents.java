@@ -1,4 +1,4 @@
-package org.midgardarmy.novaro;
+package org.midgardarmy.novaro.actions;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;

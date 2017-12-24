@@ -1,4 +1,4 @@
-package org.midgardarmy.novaro;
+package org.midgardarmy.novaro.actions;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.midgardarmy.novaro.NovaROClient;
 import org.midgardarmy.utils.BotUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -417,7 +418,4 @@ public class NovaROMarket extends NovaROClient {
             }
         }
     }
-
-    NovaROMarket() {}
-
 }

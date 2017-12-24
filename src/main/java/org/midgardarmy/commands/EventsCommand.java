@@ -7,7 +7,7 @@ import java.util.List;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
-import org.midgardarmy.novaro.NovaROEvents;
+import org.midgardarmy.novaro.actions.NovaROEvents;
 import org.midgardarmy.utils.BotUtils;
 
 public class EventsCommand implements Command {

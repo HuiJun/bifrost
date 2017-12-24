@@ -2,7 +2,6 @@ package org.midgardarmy;
 
 import sx.blah.discord.api.IDiscordClient;
 
-import org.midgardarmy.commands.CommandHandler;
 import org.midgardarmy.utils.BotUtils;
 import org.midgardarmy.utils.ConfigUtils;
 import org.midgardarmy.utils.DataUtils;

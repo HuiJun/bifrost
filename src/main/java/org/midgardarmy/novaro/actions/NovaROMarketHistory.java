@@ -1,4 +1,4 @@
-package org.midgardarmy.novaro;
+package org.midgardarmy.novaro.actions;
 
 import com.mashape.unirest.http.HttpResponse;
 import org.apache.commons.lang3.StringUtils;

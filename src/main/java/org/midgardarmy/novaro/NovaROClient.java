@@ -24,17 +24,17 @@ public class NovaROClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NovaROClient.class);
 
-    public static final String NOVARO_USER = ConfigUtils.get("novaro.user");
-    public static final String NOVARO_PASS = ConfigUtils.get("novaro.pass");
+    static final String NOVARO_USER = ConfigUtils.get("novaro.user");
+    static final String NOVARO_PASS = ConfigUtils.get("novaro.pass");
 
-    public static final String BASEURL = "https://www.novaragnarok.com/";
-    public static final String LOGIN = "module=account&action=login";
+    protected static final String BASEURL = "https://www.novaragnarok.com/";
+    static final String LOGIN = "module=account&action=login";
 
-    static final String NO_RESULTS_MESSAGE = "No Results Found.";
+    protected static final String NO_RESULTS_MESSAGE = "No Results Found.";
 
-    static CookieStore cookieStore = new BasicCookieStore();
+    protected static CookieStore cookieStore = new BasicCookieStore();
 
-    static boolean isCookieExpired() {
+    protected static boolean isCookieExpired() {
         if (cookieStore == null) {
             return true;
         }
@@ -47,7 +47,7 @@ public class NovaROClient {
         return expired;
     }
 
-    static boolean hasLoginForm(Document xmlDocument) {
+    protected static boolean hasLoginForm(Document xmlDocument) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             String loginForm = "//div[@id=\"login\"]/form";
@@ -64,7 +64,7 @@ public class NovaROClient {
         return false;
     }
 
-    static List<String> getDeepestValues(Node node) {
+    protected static List<String> getDeepestValues(Node node) {
         List<String> results = new ArrayList<>();
         for (int k = 0; k < node.getChildNodes().getLength(); k++) {
             Node child = node.getChildNodes().item(k);
@@ -78,7 +78,7 @@ public class NovaROClient {
         return results;
     }
 
-    static HttpResponse<String> getHTML(String url) throws UnirestException {
+    protected static HttpResponse<String> getHTML(String url) throws UnirestException {
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
                 .build());
@@ -87,7 +87,7 @@ public class NovaROClient {
                 .asString();
     }
 
-    static synchronized void postLogin() throws UnirestException {
+    protected static synchronized void postLogin() throws UnirestException {
         String url = String.format("%s?%s", BASEURL, LOGIN);
         Unirest.setHttpClient(org.apache.http.impl.client.HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
@@ -101,4 +101,5 @@ public class NovaROClient {
                 .asString();
     }
 
+    public NovaROClient() {}
 }

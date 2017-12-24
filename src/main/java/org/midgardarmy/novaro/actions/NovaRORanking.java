@@ -1,9 +1,10 @@
-package org.midgardarmy.novaro;
+package org.midgardarmy.novaro.actions;
 
 import com.mashape.unirest.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.midgardarmy.novaro.NovaROClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
