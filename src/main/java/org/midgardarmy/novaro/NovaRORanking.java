@@ -46,7 +46,6 @@ public class NovaRORanking extends NovaROClient {
 
             List<NameValuePair> zenyRank = new ArrayList<>(ZENYRANKING);
             b.addParameters(zenyRank);
-            logger.debug(b.toString());
             HttpResponse<String> zenyResult = getHTML(b.toString());
 
             Tidy tidy = new Tidy();
@@ -139,7 +138,6 @@ public class NovaRORanking extends NovaROClient {
                 resultList.add(object.build());
             }
 
-            logger.debug("resultList length: " + resultList.size());
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getZenyRanking: ", e);
