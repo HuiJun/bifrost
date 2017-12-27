@@ -58,7 +58,7 @@ public class PythonCommand implements Command {
             if (stdErr.length() > 0) {
                 if (logger.isDebugEnabled()) {
                     BotUtils.sendMessage(event.getChannel(), createMessage(stdErr));
-                    logger.debug("MVP Error: ", stdErr);
+                    logger.debug("Python Error: ", stdErr);
                 }
                 return;
             }
