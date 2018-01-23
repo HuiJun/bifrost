@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.midgardarmy.commands.AvatarCommand;
 import org.midgardarmy.commands.CharCommand;
 import org.midgardarmy.commands.Command;
 import org.midgardarmy.commands.EventsCommand;
@@ -31,7 +32,7 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
 
     private static Map<String, Command> commandMap = new HashMap<>();
     private static Map<Long, IMessage> processingMap = new HashMap<>();
-    private static List<String> internalProcesses = new ArrayList<>(Arrays.asList("sig", "char", "help", "events"));
+    private static List<String> internalProcesses = new ArrayList<>(Arrays.asList("sig", "char", "avatar", "help", "events"));
 
     private static EmbedBuilder processingMessage;
 
@@ -46,6 +47,7 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
     }
 
     static {
+        commandMap.put("avatar", new AvatarCommand());
         commandMap.put("char", new CharCommand());
         commandMap.put("events", new EventsCommand());
         commandMap.put("forums", new ForumsCommand());
