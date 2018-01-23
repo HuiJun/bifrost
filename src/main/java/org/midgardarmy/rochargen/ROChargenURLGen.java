@@ -24,6 +24,7 @@ public class ROChargenURLGen {
     private static final String SIGURL = BASEURL + (!BASEURL.substring(BASEURL.length() - 1).equals("/") ? "/" : "" ) + "newsig/%s/%d/%d";
     private static final String CHARURL = BASEURL + (!BASEURL.substring(BASEURL.length() - 1).equals("/") ? "/" : "" ) + "char/%s/%d/%d";
     private static final String AVATARURL = BASEURL + (!BASEURL.substring(BASEURL.length() - 1).equals("/") ? "/" : "" ) + "avatar/%s";
+    private static final String CHARHEADURL = BASEURL + (!BASEURL.substring(BASEURL.length() - 1).equals("/") ? "/" : "" ) + "characterhead/%s";
 
     private static final int BG_MIN = ConfigUtils.getInt("rochargen.bg.min");
     private static final int BG_MAX = ConfigUtils.getInt("rochargen.bg.max");
@@ -60,6 +61,16 @@ public class ROChargenURLGen {
     private static EmbedObject generateChar(String charName, int poseID, int rotationID) {
         try {
             URIBuilder b = new URIBuilder(String.format(CHARURL, encodeURIComponent(charName), poseID, rotationID));
+            return buildEmbed(b.build());
+        } catch (URISyntaxException e) {
+            logger.debug(e.getLocalizedMessage());
+        }
+        return null;
+    }
+
+    public static EmbedObject generateCharhead(String charName) {
+        try {
+            URIBuilder b = new URIBuilder(String.format(CHARHEADURL, encodeURIComponent(charName)));
             return buildEmbed(b.build());
         } catch (URISyntaxException e) {
             logger.debug(e.getLocalizedMessage());
