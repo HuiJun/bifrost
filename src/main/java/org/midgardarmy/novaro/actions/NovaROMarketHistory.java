@@ -38,16 +38,9 @@ public class NovaROMarketHistory extends NovaROMarket {
                 postLogin();
             }
 
-            int refine = Integer.parseInt(cache.get("refine"));
-
             String name = cache.get("itemName");
+            int refine = Integer.parseInt(cache.get("refine"));
             int page = Integer.parseInt(cache.get("pageNum"));
-
-            if (name.startsWith("+")) {
-                int space = name.indexOf(' ');
-                refine = Integer.parseInt(name.substring(1, space));
-                name = name.substring(space + 1);
-            }
 
             URIBuilder b = new URIBuilder(BASEURL);
 

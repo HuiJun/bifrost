@@ -31,6 +31,7 @@ public class WsCommand implements Command {
         if (itemName.startsWith("+")) {
             int space = itemName.indexOf(' ');
             refine = Integer.parseInt(itemName.substring(1, space));
+            itemName = itemName.substring(space + 1);
         }
 
         Map<String, String> cache = Command.getCached(commandCache, cacheKey, itemName, refine);

@@ -51,7 +51,7 @@ public interface Command {
             refineCache.remove(cacheKey);
             result.put(REFINE, "0");
         } else {
-            result.put(REFINE, "0");
+            result.put(REFINE, Integer.toString(refineCache.get(cacheKey)));
         }
 
         if (parsedItemName.length() < 1) {
