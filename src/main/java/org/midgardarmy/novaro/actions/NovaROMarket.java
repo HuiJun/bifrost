@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public class NovaROMarket extends NovaROClient {
                 postLogin();
             }
 
-            int refine = 0;
+            int refine = Integer.parseInt(cache.get("refine"));
 
             String name = cache.get("itemName");
             int page = Integer.parseInt(cache.get("pageNum"));

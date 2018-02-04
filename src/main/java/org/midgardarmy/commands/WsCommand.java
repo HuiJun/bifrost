@@ -27,13 +27,19 @@ public class WsCommand implements Command {
 
         String cacheKey = event.getAuthor().getStringID();
 
-        Map<String, String> cache = Command.getCached(commandCache, cacheKey, itemName);
+        int refine = 0;
+        if (itemName.startsWith("+")) {
+            int space = itemName.indexOf(' ');
+            refine = Integer.parseInt(itemName.substring(1, space));
+        }
+
+        Map<String, String> cache = Command.getCached(commandCache, cacheKey, itemName, refine);
 
         if (!Character.isDigit(cache.get(ITEM_NAME).charAt(0))) {
             responses = NovaROMarket.getByName(cache);
         } else {
             List<String> ids = Collections.singletonList(cache.get(ITEM_NAME));
-            responses = NovaROMarket.getById(ids, Integer.parseInt(cache.get(PAGE_NUM)), 0);
+            responses = NovaROMarket.getById(ids, Integer.parseInt(cache.get(PAGE_NUM)), Integer.parseInt(cache.get(REFINE)));
         }
 
         commandCache.put(cacheKey, cache);

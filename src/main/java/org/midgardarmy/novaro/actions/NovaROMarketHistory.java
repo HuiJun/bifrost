@@ -38,7 +38,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                 postLogin();
             }
 
-            int refine = 0;
+            int refine = Integer.parseInt(cache.get("refine"));
 
             String name = cache.get("itemName");
             int page = Integer.parseInt(cache.get("pageNum"));
