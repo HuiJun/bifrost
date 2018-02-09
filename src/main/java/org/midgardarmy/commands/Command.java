@@ -47,11 +47,9 @@ public interface Command {
                 parsedItemName.append(previousCommand.get(ITEM_NAME));
                 pageNum = Integer.parseInt(itemName.substring(5));
             }
-        } else if (commandCache.containsKey(cacheKey)) {
-            refineCache.remove(cacheKey);
-            result.put(REFINE, "0");
         } else {
-            result.put(REFINE, Integer.toString(refineCache.get(cacheKey)));
+            result.put(REFINE, Integer.toString(refine));
+            refineCache.put(cacheKey, refine);
         }
 
         if (parsedItemName.length() < 1) {
