@@ -12,7 +12,7 @@ import java.util.List;
 public class HeadCommand implements Command {
 
     static {
-        helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "char"), new ArrayList<>(Arrays.asList("[name]", "If provided, returns a generated character head url for the name provided. Otherwise, uses the display name of the user.")));
+        helpMap.put(String.format("%s%s", BotUtils.BOT_PREFIX, "head"), new ArrayList<>(Arrays.asList("[name]", "If provided, returns a generated character head url for the name provided. Otherwise, uses the display name of the user.")));
     }
 
     @Override
