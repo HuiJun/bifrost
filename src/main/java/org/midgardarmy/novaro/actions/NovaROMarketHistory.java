@@ -182,13 +182,13 @@ public class NovaROMarketHistory extends NovaROMarket {
                                     mh.append("");
                                     mh.append(String.join("", Collections.nCopies(6 - mh.length(), " ")));
                                     mh.append("");
-                                    mh.append(String.join("", Collections.nCopies(12 - mh.length(), " ")));
+                                    mh.append(String.join("", Collections.nCopies(14 - mh.length(), " ")));
                                     mh.append("Min");
-                                    mh.append(String.join("", Collections.nCopies(25 - mh.length(), " ")));
+                                    mh.append(String.join("", Collections.nCopies(27 - mh.length(), " ")));
                                     mh.append("Max");
-                                    mh.append(String.join("", Collections.nCopies(40 - mh.length(), " ")));
+                                    mh.append(String.join("", Collections.nCopies(42 - mh.length(), " ")));
                                     mh.append("Average");
-                                    mh.append(String.join("", Collections.nCopies(55 - mh.length(), " ")));
+                                    mh.append(String.join("", Collections.nCopies(57 - mh.length(), " ")));
                                     mh.append(String.format("%n"));
                                     mhh = true;
                                     padding = mh.length();
@@ -196,13 +196,13 @@ public class NovaROMarketHistory extends NovaROMarket {
                                 mh.append(result.get(0));
                                 mh.append(String.join("", Collections.nCopies(6 - mh.length() + padding, " ")));
                                 mh.append(result.get(1));
-                                mh.append(String.join("", Collections.nCopies(12 - mh.length() + padding, " ")));
+                                mh.append(String.join("", Collections.nCopies(14 - mh.length() + padding, " ")));
                                 mh.append(result.get(2));
-                                mh.append(String.join("", Collections.nCopies(25 - mh.length() + padding, " ")));
+                                mh.append(String.join("", Collections.nCopies(27 - mh.length() + padding, " ")));
                                 mh.append(result.get(3));
-                                mh.append(String.join("", Collections.nCopies(40 - mh.length() + padding, " ")));
+                                mh.append(String.join("", Collections.nCopies(42 - mh.length() + padding, " ")));
                                 mh.append(result.get(4));
-                                mh.append(String.join("", Collections.nCopies(55 - mh.length() + padding, " ")));
+                                mh.append(String.join("", Collections.nCopies(57 - mh.length() + padding, " ")));
                                 mh.append(String.format("%n"));
                                 break;
 
