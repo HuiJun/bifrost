@@ -56,6 +56,9 @@ public class NovaROEvents {
         EmbedBuilder builder = new EmbedBuilder();
         builder.withTitle("Auto Events");
         builder.withColor(255, 255, 0);
+        builder.appendDescription("```");
+        builder.appendDescription(String.join("", Collections.nCopies(110, "-")));
+        builder.appendDescription("```");
         builder.appendDescription("```haskell");
         builder.appendDescription(String.format("%n"));
         List<String> formatted = buildEventTable(autoEvents, longest);

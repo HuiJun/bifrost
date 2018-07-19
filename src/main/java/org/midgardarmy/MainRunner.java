@@ -1,10 +1,13 @@
 package org.midgardarmy;
 
+import jdk.net.SocketFlow;
 import sx.blah.discord.api.IDiscordClient;
 
 import org.midgardarmy.utils.BotUtils;
 import org.midgardarmy.utils.ConfigUtils;
 import org.midgardarmy.utils.DataUtils;
+import sx.blah.discord.handle.obj.ActivityType;
+import sx.blah.discord.handle.obj.StatusType;
 import sx.blah.discord.util.Image;
 
 public class MainRunner {
@@ -31,7 +34,7 @@ public class MainRunner {
                     client.changeUsername(name);
                 }
                 if (playing != null && !playing.isEmpty()) {
-                    client.changePlayingText(playing);
+                    client.changePresence(StatusType.ONLINE, ActivityType.PLAYING, playing);
                 }
                 if (avatar != null && !avatar.isEmpty() && avatarType != null && !avatarType.isEmpty()) {
                     client.changeAvatar(Image.forUrl(avatarType, avatar));

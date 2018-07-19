@@ -69,7 +69,6 @@ public class NovaRORanking extends NovaROClient {
                 StringBuilder mhu = new StringBuilder();
                 boolean mhh = false;
                 for (List<String> result : results) {
-                    logger.debug("Result Size: " + result.size());
                     switch (result.size()) {
                         case 7:
                         case 8:
@@ -130,7 +129,12 @@ public class NovaRORanking extends NovaROClient {
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
                 object.withTitle("Zeny Rankings");
-                object.withDescription("```haskell");
+
+                object.withDescription("```");
+                object.appendDescription(String.join("", Collections.nCopies(110, "-")));
+                object.appendDescription("```");
+
+                object.appendDescription("```haskell");
                 object.appendDescription(String.format("%n"));
                 object.appendDescription(NO_RESULTS_MESSAGE);
                 object.appendDescription(String.format("%n"));

@@ -70,7 +70,12 @@ public class NovaROMarketHistory extends NovaROMarket {
             EmbedBuilder object = new EmbedBuilder();
             object.withColor(128, 0, 128);
             object.withTitle("Search Results");
-            object.withDescription("```haskell");
+
+            object.withDescription("```");
+            object.appendDescription(String.join("", Collections.nCopies(110, "-")));
+            object.appendDescription("```");
+
+            object.appendDescription("```haskell");
             object.appendDescription(String.format("%n"));
 
             StringBuilder currentId = new StringBuilder();
@@ -144,7 +149,12 @@ public class NovaROMarketHistory extends NovaROMarket {
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
                 object.withTitle(String.format("Transaction History for %s", pageTitle));
-                object.withDescription("```haskell");
+
+                object.withDescription("```");
+                object.appendDescription(String.join("", Collections.nCopies(110, "-")));
+                object.appendDescription("```");
+
+                object.appendDescription("```haskell");
                 object.appendDescription(String.format("%n"));
 
                 if (!results.isEmpty()) {
@@ -218,7 +228,12 @@ public class NovaROMarketHistory extends NovaROMarket {
                         EmbedBuilder mhBuilder = new EmbedBuilder();
                         mhBuilder.withColor(128, 0, 128);
                         mhBuilder.withTitle(String.format("Market History for %s", pageTitle));
-                        mhBuilder.withDescription("```haskell");
+
+                        mhBuilder.withDescription("```");
+                        mhBuilder.appendDescription(String.join("", Collections.nCopies(110, "-")));
+                        mhBuilder.appendDescription("```");
+                        
+                        mhBuilder.appendDescription("```haskell");
                         mhBuilder.appendDescription(String.format("%n"));
                         mhBuilder.appendDescription(mhu.toString());
                         mhBuilder.appendDescription("```");

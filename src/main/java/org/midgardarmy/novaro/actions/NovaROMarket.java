@@ -157,7 +157,12 @@ public class NovaROMarket extends NovaROClient {
                 EmbedBuilder object = new EmbedBuilder();
                 object.withColor(128, 0, 128);
                 object.withTitle(String.format("Vendors Selling %s", pageTitle));
-                object.withDescription("```haskell");
+
+                object.withDescription("```");
+                object.appendDescription(String.join("", Collections.nCopies(110, "-")));
+                object.appendDescription("```");
+
+                object.appendDescription("```haskell");
                 object.appendDescription(String.format("%n"));
 
                 if (!results.isEmpty()) {
