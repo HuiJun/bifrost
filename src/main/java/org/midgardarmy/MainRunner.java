@@ -1,13 +1,15 @@
 package org.midgardarmy;
 
+import sx.blah.discord.api.IDiscordClient;
+
 import org.midgardarmy.utils.BotUtils;
 import org.midgardarmy.utils.ConfigUtils;
-import sx.blah.discord.api.IDiscordClient;
+import org.midgardarmy.utils.DataUtils;
+import sx.blah.discord.util.Image;
 
 public class MainRunner {
 
     public static void main(String[] args){
-
         String token;
         if(args.length != 1){
             token = ConfigUtils.get("discord.bot.token");
@@ -15,14 +17,29 @@ public class MainRunner {
             token = args[0];
         }
 
-        IDiscordClient cli = BotUtils.getBuiltDiscordClient(token);
+        DataUtils.loadAll();
+        IDiscordClient client = BotUtils.getBuiltDiscordClient(token);
+        client.getDispatcher().registerListener(new CommandHandler());
+        client.getDispatcher().registerListener(readyEvent -> {
+            if (client.isLoggedIn()) {
+                String name = ConfigUtils.get("discord.bot.name");
+                String playing = ConfigUtils.get("discord.bot.playing");
+                String avatar = ConfigUtils.get("discord.bot.avatar.url");
+                String avatarType = ConfigUtils.get("discord.bot.avatar.type");
 
-        // Register a listener via the EventSubscriber annotation which allows for organisation and delegation of events
-        cli.getDispatcher().registerListener(new CommandHandler());
+                if (name != null && !name.isEmpty()) {
+                    client.changeUsername(name);
+                }
+                if (playing != null && !playing.isEmpty()) {
+                    client.changePlayingText(playing);
+                }
+                if (avatar != null && !avatar.isEmpty() && avatarType != null && !avatarType.isEmpty()) {
+                    client.changeAvatar(Image.forUrl(avatarType, avatar));
+                }
+            }
+        });
 
-        // Only login after all events are registered otherwise some may be missed.
-        cli.login();
-
+        client.login();
     }
 
 }

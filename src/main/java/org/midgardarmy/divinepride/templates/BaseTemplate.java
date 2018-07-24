@@ -1,9 +1,12 @@
 package org.midgardarmy.divinepride.templates;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class BaseTemplate {
+
     static Map<String, String> replacements = new HashMap<>();
 
     public static String clean(String text) {
@@ -16,6 +19,9 @@ public class BaseTemplate {
                 result.append(tmp);
             }
         });
-        return result.toString();
+        return StringUtils.abbreviate(result.toString(), 1024);
     }
+
+    BaseTemplate() {}
+
 }

@@ -6,76 +6,65 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sx.blah.discord.api.events.EventSubscriber;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
+import org.midgardarmy.commands.AvatarCommand;
+import org.midgardarmy.commands.CharCommand;
+import org.midgardarmy.commands.HeadCommand;
+import org.midgardarmy.commands.Command;
+import org.midgardarmy.commands.EventsCommand;
+import org.midgardarmy.commands.HelpCommand;
+import org.midgardarmy.commands.IiCommand;
+import org.midgardarmy.commands.MapCommand;
+import org.midgardarmy.commands.MiCommand;
+import org.midgardarmy.commands.PcCommand;
+import org.midgardarmy.commands.SigCommand;
+import org.midgardarmy.commands.WsCommand;
+import org.midgardarmy.commands.ZenyCommand;
+import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IMessage;
+import sx.blah.discord.util.EmbedBuilder;
 
-import org.midgardarmy.divinepride.DivinePrideClient;
-import org.midgardarmy.rochargen.ROChargenURLGen;
 import org.midgardarmy.utils.BotUtils;
+import org.midgardarmy.utils.ConfigUtils;
 
-public class CommandHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
+public class CommandHandler implements IListener<MessageReceivedEvent> {
 
     private static Map<String, Command> commandMap = new HashMap<>();
+    private static Map<Long, IMessage> processingMap = new HashMap<>();
+    private static List<String> internalProcesses = new ArrayList<>(Arrays.asList("sig", "char", "head", "avatar", "help", "events"));
+
+    private static EmbedBuilder processingMessage;
 
     static {
-
-        commandMap.put("sig", (event, args) -> {
-
-            String charName = args.isEmpty() ? event.getAuthor().getDisplayName(event.getGuild()) : String.join(" ", args);
-            String response = ROChargenURLGen.generateSig(charName);
-            BotUtils.sendMessage(event.getChannel(), response);
-
-        });
-
-        commandMap.put("ii", (event, args) -> {
-
-            String itemName = args.isEmpty() ? "jellopy" : String.join(" ", args);
-            List<EmbedObject> responses;
-            if (!Character.isDigit(itemName.charAt(0))) {
-                responses = DivinePrideClient.getByName("i", itemName);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
-                }
-            } else {
-                responses = DivinePrideClient.getById("i", args);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
-                }
-            }
-        });
-
-        commandMap.put("mi", (event, args) -> {
-
-            String monsterName = args.isEmpty() ? "poring" : String.join(" ", args);
-            List<EmbedObject> responses;
-            if (!Character.isDigit(monsterName.charAt(0))) {
-                responses = DivinePrideClient.getByName("m", monsterName);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
-                }
-            } else {
-                responses = DivinePrideClient.getById("m", args);
-                for (EmbedObject response : responses) {
-                    BotUtils.sendMessage(event.getChannel(), response);
-                }
-            }
-        });
+        processingMessage = new EmbedBuilder();
+        String processingUrl = ConfigUtils.get("discord.bot.processing");
+        if (!processingUrl.isEmpty()) {
+            processingMessage.withImage(processingUrl);
+        } else {
+            processingMessage.withDescription("Processing...");
+        }
     }
 
-    @EventSubscriber
-    public void onMessageReceived(MessageReceivedEvent event) {
+    static {
+        commandMap.put("avatar", new AvatarCommand());
+        commandMap.put("char", new CharCommand());
+        commandMap.put("head", new HeadCommand());
+        commandMap.put("events", new EventsCommand());
+        commandMap.put("help", new HelpCommand());
+        commandMap.put("ii", new IiCommand());
+        commandMap.put("map", new MapCommand());
+        commandMap.put("mi", new MiCommand());
+        commandMap.put("pc", new PcCommand());
+        commandMap.put("sig", new SigCommand());
+        commandMap.put("ws", new WsCommand());
+        commandMap.put("zeny", new ZenyCommand());
+    }
 
+    @Override
+    public void handle(MessageReceivedEvent event) {
         String[] argArray = event.getMessage().getContent().split(" ");
 
-        if (argArray.length == 0)
-            return;
-
-        if (!argArray[0].startsWith(BotUtils.BOT_PREFIX)) {
+        if (argArray.length == 0 || !argArray[0].startsWith(BotUtils.BOT_PREFIX)) {
             return;
         }
 
@@ -85,10 +74,18 @@ public class CommandHandler {
         argsList.remove(0);
 
         if (commandMap.containsKey(commandStr)) {
-            //IMessage initial = event.getChannel().sendMessage("Processing...");
-            commandMap.get(commandStr).runCommand(event, argsList);
-        }
+            if (!internalProcesses.contains(commandStr)) {
+                IMessage initial = event.getChannel().sendMessage(processingMessage.build());
+                processingMap.put(event.getMessageID(), initial);
+            }
 
+            commandMap.get(commandStr).runCommand(event, argsList);
+
+            if (processingMap.get(event.getMessageID()) != null) {
+                processingMap.get(event.getMessageID()).delete();
+                processingMap.remove(event.getMessageID());
+            }
+        }
     }
 
 }

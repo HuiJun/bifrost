@@ -2,6 +2,7 @@ package org.midgardarmy.divinepride;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,21 +24,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
 
-import org.midgardarmy.utils.ConfigUtils;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.EmbedBuilder;
+
+import org.midgardarmy.utils.ConfigUtils;
 
 public class DivinePrideClient {
 
     private static final Logger logger = LoggerFactory.getLogger(DivinePrideClient.class);
 
-    private static final String DIVINE_PRIDE_API_KEY = ConfigUtils.get("divinepride.apiKey");
-    private static final String BASEURL = "https://www.divine-pride.net/";
+    public static final String DIVINE_PRIDE_API_KEY = ConfigUtils.get("divinepride.apiKey");
+    public static final String BASEURL = "https://www.divine-pride.net/";
 
-    private static final String API = "api/database/";
-    private static final String SEARCH = "database/";
+    public static final String API = "api/database/";
+    public static final String SEARCH = "database/";
 
-    private static final Map<String, String> ENDPOINTMAP;
+    public static final Map<String, String> ENDPOINTMAP;
     static {
         ENDPOINTMAP = new HashMap<>();
         ENDPOINTMAP.put("e", "Experience");
@@ -69,13 +71,14 @@ public class DivinePrideClient {
             tidy.setXmlTags(true);
             tidy.setXmlOut(true);
 
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(searchResult.getBody().getBytes("UTF-8"));
-            Document xmlDocument = tidy.parseDOM(inputStream, null);
+            Document xmlDocument = tidy.parseDOM(new ByteArrayInputStream(searchResult.getBody().getBytes(StandardCharsets.UTF_8)), null);
 
             List<String> ids = extractIDs(xmlDocument);
             return getById(action, ids);
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug("getByName Error: " + e.getLocalizedMessage());
+            }
         }
         return resultList;
     }
@@ -89,11 +92,21 @@ public class DivinePrideClient {
                 b.setPath(API + actionParam + ((id != null) ? "/" + id : ""));
                 HttpResponse<JsonNode> results = apiCall(b.toString());
                 Class clazz = Class.forName("org.midgardarmy.divinepride.templates." + ENDPOINTMAP.get(action) + "Template");
+
+                @SuppressWarnings("unchecked")
                 Method method = clazz.getMethod("apply", JsonNode.class);
-                EmbedBuilder object = (EmbedBuilder) method.invoke(null, results.getBody());
-                resultList.add(object.build());
+
+                EmbedBuilder object = new EmbedBuilder();
+                if (results.getBody() != null) {
+                    object = (EmbedBuilder) method.invoke(null, results.getBody());
+                }
+                if (object != null) {
+                    resultList.add(object.build());
+                }
             } catch (Exception e) {
-                logger.debug(e.getMessage());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("getById: ", e);
+                }
             }
         }
         if (resultList.isEmpty()) {
@@ -108,25 +121,27 @@ public class DivinePrideClient {
         List<String> result = new ArrayList<>();
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String expression = "//div[@id=\"target-1\"]//table/tbody/tr/td/a/@href";
+            String expression = "//table/tbody/tr/td/a/@href";
             NodeList nodes = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
             for (int i = 0; i < nodes.getLength(); i++) {
                 result.add(extractIDString(nodes.item(i).getNodeValue()));
             }
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug("extractIDs Error: " + e.getLocalizedMessage());
+            }
         }
 
         return result;
     }
 
-    private static HttpResponse<String> getHTML(String url) throws UnirestException {
+    public static HttpResponse<String> getHTML(String url) throws UnirestException {
         return Unirest.get(url)
                 .header("accept", "application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,*/*;q=0.5")
                 .asString();
     }
 
-    private static HttpResponse<JsonNode> apiCall(String url) throws UnirestException {
+    public static HttpResponse<JsonNode> apiCall(String url) throws UnirestException {
         return Unirest.get(url)
                 .header("accept", "application/json")
                 .queryString("apiKey", DIVINE_PRIDE_API_KEY)
@@ -136,4 +151,7 @@ public class DivinePrideClient {
     private static String extractIDString(String str) {
         return str.split("/")[3];
     }
+
+    private DivinePrideClient() {}
+
 }

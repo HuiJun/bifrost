@@ -2,7 +2,12 @@
 # Discord Config #
 ##################
 discord.bot.token=
-discord.bot.prefix=
+discord.bot.prefix=!
+discord.bot.name=
+discord.bot.playing=
+discord.bot.avatar.url=
+discord.bot.avatar.type=png
+discord.bot.processing=
 
 ####################
 # ROChargen Config #
@@ -17,3 +22,22 @@ rochargen.pos.max=
 # DivinePride Config #
 ######################
 divinepride.apiKey=
+
+########################
+# NovaRO Market Config #
+########################
+novaro.user=
+novaro.pass=
+
+#################
+# Shivtr Config #
+#################
+shivtr.url=
+shivtr.user=
+shivtr.pass=
+
+##################
+# Bifrost Config #
+##################
+bifrost.python=
+bifrost.mvpbot.location=
