@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Thread.sleep;
-
 public class PcCommand implements Command {
 
     private static Map<String, Map<String, String>> commandCache = new HashMap<>();
