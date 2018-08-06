@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 import net.zerofill.novaro.actions.NovaROEvents;
@@ -18,9 +17,9 @@ public class EventsCommand implements Command {
 
     @Override
     public void runCommand(MessageReceivedEvent event, List<String> args) {
-        List<EmbedObject> results = NovaROEvents.getEvents();
+        List<String> results = NovaROEvents.getEvents();
 
-        for (EmbedObject result : results) {
+        for (String result : results) {
             BotUtils.sendMessage(event.getChannel(), result);
         }
     }

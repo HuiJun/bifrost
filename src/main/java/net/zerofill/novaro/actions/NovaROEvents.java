@@ -32,8 +32,8 @@ public class NovaROEvents {
 
     private static CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(QUARTZ));
 
-    public static List<EmbedObject> getEvents() {
-        List<EmbedObject> eventResults = new ArrayList<>();
+    public static List<String> getEvents() {
+        List<String> eventResults = new ArrayList<>();
         List<Map<String, Object>> events = DataUtils.getEvents();
         List<Map<String, Object>> autoEvents = new ArrayList<>();
         List<Map<String, Object>> specialEvents = new ArrayList<>();
@@ -53,21 +53,19 @@ public class NovaROEvents {
 
         }
 
-        EmbedBuilder builder = new EmbedBuilder();
-        builder.withTitle("Auto Events");
-        builder.withColor(255, 255, 0);
-        builder.appendDescription("```");
-        builder.appendDescription(String.join("", Collections.nCopies(110, "-")));
-        builder.appendDescription("```");
-        builder.appendDescription("```haskell");
-        builder.appendDescription(String.format("%n"));
+        StringBuilder builder = new StringBuilder();
+        builder.append("Auto Events");
+        builder.append(String.format("%n"));
+
+        builder.append("```haskell");
+        builder.append(String.format("%n"));
         List<String> formatted = buildEventTable(autoEvents, longest);
         for (String format : formatted) {
-            builder.appendDescription(format);
+            builder.append(format);
         }
-        builder.appendDescription("```");
+        builder.append("```");
 
-        eventResults.add(builder.build());
+        eventResults.add(builder.toString());
         return eventResults;
     }
 

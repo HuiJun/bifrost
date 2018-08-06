@@ -1,6 +1,7 @@
 package net.zerofill.novaro.actions;
 
 import com.mashape.unirest.http.HttpResponse;
+import net.zerofill.utils.SortUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
@@ -31,8 +32,8 @@ public class NovaROMarketHistory extends NovaROMarket {
         ITEMHISTORY.add(new BasicNameValuePair("action", "itemhistory"));
     }
 
-    public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
-        List<EmbedObject> resultList = new ArrayList<>();
+    public static synchronized List<String> getByName(Map<String, String> cache) {
+        List<String> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
                 postLogin();
@@ -67,16 +68,12 @@ public class NovaROMarketHistory extends NovaROMarket {
             List<List<String>> items = extractIDs(xmlDocument);
             int pageNum = getPages(xmlDocument);
 
-            EmbedBuilder object = new EmbedBuilder();
-            object.withColor(128, 0, 128);
-            object.withTitle("Search Results");
+            StringBuilder object = new StringBuilder();
+            object.append("Search Results");
+            object.append(String.format("%n"));
 
-            object.withDescription("```");
-            object.appendDescription(String.join("", Collections.nCopies(110, "-")));
-            object.appendDescription("```");
-
-            object.appendDescription("```haskell");
-            object.appendDescription(String.format("%n"));
+            object.append("```haskell");
+            object.append(String.format("%n"));
 
             StringBuilder currentId = new StringBuilder();
             int itemCount = processSearchResults(object, "pc", items, currentId);
@@ -85,15 +82,15 @@ public class NovaROMarketHistory extends NovaROMarket {
                 cache.put("itemName", currentId.toString());
                 return getById(Arrays.asList(currentId.toString().split(" ")), 0, refine);
             } else if (itemCount == 0) {
-                object.appendDescription(NO_RESULTS_MESSAGE);
+                object.append(NO_RESULTS_MESSAGE);
             }
 
-            object.appendDescription(String.format("%n"));
-            object.appendDescription("```");
+            object.append(String.format("%n"));
+            object.append("```");
 
             addFooter(object, "pc", page, pageNum);
 
-            resultList.add(object.build());
+            resultList.add(object.toString());
             return resultList;
 
         } catch (Exception e) {
@@ -104,8 +101,8 @@ public class NovaROMarketHistory extends NovaROMarket {
         return resultList;
     }
 
-    public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
-        List<EmbedObject> resultList = new ArrayList<>();
+    public static synchronized List<String> getById(List<String> ids, int page, int refine) {
+        List<String> resultList = new ArrayList<>();
 
         for (String id : ids) {
             try {
@@ -146,22 +143,22 @@ public class NovaROMarketHistory extends NovaROMarket {
                 String pageTitle = getItemTitle(xmlDocument);
                 int pageNum = getPages(xmlDocument);
 
-                EmbedBuilder object = new EmbedBuilder();
-                object.withColor(128, 0, 128);
-                object.withTitle(String.format("Transaction History for %s", pageTitle));
+                StringBuilder object = new StringBuilder();
+                object.append(String.format("Transaction History for %s", pageTitle));
+                object.append(String.format("%n"));
 
-                object.withDescription("```");
-                object.appendDescription(String.join("", Collections.nCopies(110, "-")));
-                object.appendDescription("```");
-
-                object.appendDescription("```haskell");
-                object.appendDescription(String.format("%n"));
+                object.append("```haskell");
+                object.append(String.format("%n"));
 
                 if (!results.isEmpty()) {
 
                     StringBuilder sbu = new StringBuilder();
                     StringBuilder mhu = new StringBuilder();
                     boolean mhh = false;
+
+                    SortUtil cc = new SortUtil(0, false);
+                    Collections.sort(results, cc);
+
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
                         StringBuilder mh = new StringBuilder();
@@ -169,8 +166,8 @@ public class NovaROMarketHistory extends NovaROMarket {
                             case 3:
                                 sb.append(String.format("%s", result.get(0)).substring(0, 8));
                                 sb.append(String.join("", Collections.nCopies(12 - sb.length(), " ")));
-                                sb.append(StringUtils.abbreviate(result.get(1), 16));
-                                sb.append(String.join("", Collections.nCopies(27 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(1), 36));
+                                sb.append(String.join("", Collections.nCopies(47 - sb.length(), " ")));
                                 sb.append(result.get(2));
                                 sb.append(String.format("%n"));
                                 break;
@@ -182,7 +179,7 @@ public class NovaROMarketHistory extends NovaROMarket {
                                 sb.append(String.join("", Collections.nCopies(24 - sb.length(), " ")));
                                 sb.append(StringUtils.abbreviate(result.get(2), 4));
                                 sb.append(String.join("", Collections.nCopies(28 - sb.length(), " ")));
-                                sb.append(StringUtils.abbreviate(result.get(3), 27));
+                                sb.append(StringUtils.abbreviate(result.get(3), 50));
                                 sb.append(String.format("%n"));
                                 break;
 
@@ -220,41 +217,39 @@ public class NovaROMarketHistory extends NovaROMarket {
                                 break;
                         }
 
-                        sbu.append(sb.toString());
+                        if (sbu.length() + sb.length() < 1900) {
+                            sbu.append(sb.toString());
+                        }
+
                         mhu.append(mh.toString());
                     }
 
                     if (mhu.length() > 0) {
-                        EmbedBuilder mhBuilder = new EmbedBuilder();
-                        mhBuilder.withColor(128, 0, 128);
-                        mhBuilder.withTitle(String.format("Market History for %s", pageTitle));
+                        StringBuilder mhBuilder = new StringBuilder();
+                        mhBuilder.append(String.format("Market History for %s", pageTitle));
 
-                        mhBuilder.withDescription("```");
-                        mhBuilder.appendDescription(String.join("", Collections.nCopies(110, "-")));
-                        mhBuilder.appendDescription("```");
-                        
-                        mhBuilder.appendDescription("```haskell");
-                        mhBuilder.appendDescription(String.format("%n"));
-                        mhBuilder.appendDescription(mhu.toString());
-                        mhBuilder.appendDescription("```");
-                        resultList.add(0, mhBuilder.build());
+                        mhBuilder.append("```haskell");
+                        mhBuilder.append(String.format("%n"));
+                        mhBuilder.append(mhu.toString());
+                        mhBuilder.append("```");
+                        resultList.add(0, mhBuilder.toString());
                     }
 
                     if (sbu.length() > 0) {
-                        object.appendDescription(sbu.toString());
+                        object.append(sbu.toString());
                     } else {
-                        object.appendDescription(NO_RESULTS_MESSAGE);
+                        object.append(NO_RESULTS_MESSAGE);
                     }
 
                 } else {
-                    object.appendDescription(NO_RESULTS_MESSAGE);
+                    object.append(NO_RESULTS_MESSAGE);
                 }
 
-                object.appendDescription(String.format("%n"));
-                object.appendDescription("```");
+                object.append(String.format("%n"));
+                object.append("```");
                 addFooter(object, "pc", page, pageNum);
 
-                resultList.add(object.build());
+                resultList.add(object.toString());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("getById: ", e);
@@ -263,9 +258,9 @@ public class NovaROMarketHistory extends NovaROMarket {
         }
 
         if (resultList.isEmpty()) {
-            EmbedObject object = new EmbedObject();
-            object.description = "No Results Found";
-            resultList.add(object);
+            StringBuilder object = new StringBuilder();
+            object.append(String.format("%nNo Results Found"));
+            resultList.add(object.toString());
         }
 
         return resultList;

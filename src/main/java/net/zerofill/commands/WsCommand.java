@@ -2,7 +2,6 @@ package net.zerofill.commands;
 
 import net.zerofill.novaro.actions.NovaROMarket;
 import net.zerofill.utils.BotUtils;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ public class WsCommand implements Command {
     @Override
     public void runCommand(MessageReceivedEvent event, List<String> args) {
         String itemName = args.isEmpty() ? "jellopy" : String.join(" ", args);
-        List<EmbedObject> responses;
+        List<String> responses;
 
         String cacheKey = event.getAuthor().getStringID();
 
@@ -45,7 +44,7 @@ public class WsCommand implements Command {
 
         commandCache.put(cacheKey, cache);
 
-        for (EmbedObject response : responses) {
+        for (String response : responses) {
             BotUtils.sendMessage(event.getChannel(), response);
         }
     }

@@ -12,6 +12,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import net.zerofill.utils.SortUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
@@ -47,8 +48,8 @@ public class NovaROMarket extends NovaROClient {
         ITEM.add(new BasicNameValuePair("action", "item"));
     }
 
-    public static synchronized List<EmbedObject> getByName(Map<String, String> cache) {
-        List<EmbedObject> resultList = new ArrayList<>();
+    public static synchronized List<String> getByName(Map<String, String> cache) {
+        List<String> resultList = new ArrayList<>();
         try {
             if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
                 postLogin();
@@ -80,11 +81,12 @@ public class NovaROMarket extends NovaROClient {
             List<List<String>> items = extractIDs(xmlDocument);
             int pageNum = getPages(xmlDocument);
 
-            EmbedBuilder object = new EmbedBuilder();
-            object.withColor(128, 0, 128);
-            object.withTitle("Search Results");
-            object.withDescription("```haskell");
-            object.appendDescription(String.format("%n"));
+            StringBuilder object = new StringBuilder();
+            object.append("Search Results");
+            object.append(String.format("%n"));
+
+            object.append("```haskell");
+            object.append(String.format("%n"));
 
             StringBuilder currentId = new StringBuilder();
             int itemCount = processSearchResults(object, "ws", items, currentId);
@@ -92,15 +94,15 @@ public class NovaROMarket extends NovaROClient {
                 cache.put("itemName", currentId.toString());
                 return getById(Arrays.asList(currentId.toString().split(" ")), 1, refine);
             } else if (itemCount == 0) {
-                object.appendDescription(NO_RESULTS_MESSAGE);
+                object.append(NO_RESULTS_MESSAGE);
             }
 
-            object.appendDescription(String.format("%n"));
-            object.appendDescription("```");
+            object.append(String.format("%n"));
+            object.append("```");
 
             addFooter(object, "ws", page, pageNum);
 
-            resultList.add(object.build());
+            resultList.add(object.toString());
             return resultList;
 
         } catch (Exception e) {
@@ -111,8 +113,8 @@ public class NovaROMarket extends NovaROClient {
         return resultList;
     }
 
-    public static synchronized List<EmbedObject> getById(List<String> ids, int page, int refine) {
-        List<EmbedObject> resultList = new ArrayList<>();
+    public static synchronized List<String> getById(List<String> ids, int page, int refine) {
+        List<String> resultList = new ArrayList<>();
 
         for (String id : ids) {
             try {
@@ -153,27 +155,25 @@ public class NovaROMarket extends NovaROClient {
                 String pageTitle = getItemTitle(xmlDocument);
                 int pageNum = getPages(xmlDocument);
 
-                EmbedBuilder object = new EmbedBuilder();
-                object.withColor(128, 0, 128);
-                object.withTitle(String.format("Vendors Selling %s", pageTitle));
+                StringBuilder object = new StringBuilder();
+                object.append(String.format("Vendors Selling %s", pageTitle));
+                object.append(String.format("%n"));
 
-                object.withDescription("```");
-                object.appendDescription(String.join("", Collections.nCopies(110, "-")));
-                object.appendDescription("```");
-
-                object.appendDescription("```haskell");
-                object.appendDescription(String.format("%n"));
+                object.append("```haskell");
+                object.append(String.format("%n"));
 
                 if (!results.isEmpty()) {
                     StringBuilder sbu = new StringBuilder();
+                    SortUtil cc = new SortUtil(0);
+                    Collections.sort(results, cc);
                     for (List<String> result : results) {
                         StringBuilder sb = new StringBuilder();
                         switch (result.size()) {
                             case 3:
                                 sb.append(result.get(0));
                                 sb.append(String.join("", Collections.nCopies(14 - sb.length(), " ")));
-                                sb.append(StringUtils.abbreviate(result.get(1), 16));
-                                sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(1), 36));
+                                sb.append(String.join("", Collections.nCopies(57 - sb.length(), " ")));
                                 sb.append(result.get(2));
                                 sb.append(String.format("%n"));
                                 break;
@@ -183,8 +183,8 @@ public class NovaROMarket extends NovaROClient {
                                 sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
                                 sb.append(result.get(1));
                                 sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
-                                sb.append(StringUtils.abbreviate(result.get(2), 16));
-                                sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(2), 36));
+                                sb.append(String.join("", Collections.nCopies(57 - sb.length(), " ")));
                                 sb.append(result.get(3));
                                 sb.append(String.format("%n"));
                                 break;
@@ -194,8 +194,8 @@ public class NovaROMarket extends NovaROClient {
                                 sb.append(String.join("", Collections.nCopies(15 - sb.length(), " ")));
                                 sb.append(result.get(2));
                                 sb.append(String.join("", Collections.nCopies(20 - sb.length(), " ")));
-                                sb.append(StringUtils.abbreviate(result.get(3), 16));
-                                sb.append(String.join("", Collections.nCopies(37 - sb.length(), " ")));
+                                sb.append(StringUtils.abbreviate(result.get(3), 36));
+                                sb.append(String.join("", Collections.nCopies(57 - sb.length(), " ")));
                                 sb.append(result.get(4));
                                 sb.append(String.format("%n"));
                                 break;
@@ -204,24 +204,26 @@ public class NovaROMarket extends NovaROClient {
                                 break;
                         }
 
-                        sbu.append(sb.toString());
+                        if (sbu.length() + sb.length() < 1900) {
+                            sbu.append(sb.toString());
+                        }
                     }
 
                     if (sbu.length() > 0) {
-                        object.appendDescription(sbu.toString());
+                        object.append(sbu.toString());
                     } else {
-                        object.appendDescription(NO_RESULTS_MESSAGE);
+                        object.append(NO_RESULTS_MESSAGE);
                     }
 
                 } else {
-                    object.appendDescription(NO_RESULTS_MESSAGE);
+                    object.append(NO_RESULTS_MESSAGE);
                 }
 
-                object.appendDescription(String.format("%n"));
-                object.appendDescription("```");
+                object.append(String.format("%n"));
+                object.append("```");
                 addFooter(object, "ws", page, pageNum);
 
-                resultList.add(object.build());
+                resultList.add(object.toString());
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("getById: ", e);
@@ -230,9 +232,9 @@ public class NovaROMarket extends NovaROClient {
         }
 
         if (resultList.isEmpty()) {
-            EmbedObject object = new EmbedObject();
-            object.description = "No Results Found";
-            resultList.add(object);
+            StringBuilder object = new StringBuilder();
+            object.append(String.format("%nNo Results Found"));
+            resultList.add(object.toString());
         }
 
         return resultList;
@@ -376,7 +378,7 @@ public class NovaROMarket extends NovaROClient {
         return 1;
     }
 
-    static int processSearchResults(EmbedBuilder object, String command, List<List<String>> items, StringBuilder currentId) {
+    static int processSearchResults(StringBuilder object, String command, List<List<String>> items, StringBuilder currentId) {
         int count = 0;
         for (List<String> item : items) {
             if (item.size() == 4) {
@@ -387,7 +389,7 @@ public class NovaROMarket extends NovaROClient {
                 sb.append(' ');
                 sb.append(String.format("(%s)", item.get(3)));
 
-                object.appendDescription(String.format("%s%n", StringUtils.abbreviate(sb.toString(), 60)));
+                object.append(String.format("%n%s%n", StringUtils.abbreviate(sb.toString(), 60)));
                 count++;
                 currentId.append(item.get(0));
             }
@@ -395,25 +397,30 @@ public class NovaROMarket extends NovaROClient {
         return count;
     }
 
-    static void addFooter(EmbedBuilder object, String command, int page, int pageNum) {
+    static void addFooter(StringBuilder object, String command, int page, int pageNum) {
+        object.append(String.format("%n"));
+        object.append("```haskell");
+        object.append(String.format("%n"));
+
         if (pageNum > 10) {
-            object.withFooterText(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, "10+", BotUtils.BOT_PREFIX, command));
+            object.append(String.format("Page %1$d of %2$s (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, "10+", BotUtils.BOT_PREFIX, command));
         } else {
             if (pageNum > 1) {
                 if (page == 1) {
-                    object.withFooterText(String.format("Page 1 of %1$d (Use %2$s%3$s next or %2$s%3$s page [page number] to navigate)", pageNum, BotUtils.BOT_PREFIX, command));
+                    object.append(String.format("Page 1 of %1$d (Use %2$s%3$s next or %2$s%3$s page [page number] to navigate)", pageNum, BotUtils.BOT_PREFIX, command));
                 } else if (page < pageNum) {
-                    object.withFooterText(String.format("Page %1$d of %2$d (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, pageNum, BotUtils.BOT_PREFIX, command));
+                    object.append(String.format("Page %1$d of %2$d (Use %3$s%4$s next, %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page > 1 ? page : 1, pageNum, BotUtils.BOT_PREFIX, command));
                 } else if (page == pageNum) {
-                    object.withFooterText(String.format("Page %1$d of %2$d (Use %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, pageNum, BotUtils.BOT_PREFIX, command));
+                    object.append(String.format("Page %1$d of %2$d (Use %3$s%4$s prev or %3$s%4$s page [page number] to navigate)", page, pageNum, BotUtils.BOT_PREFIX, command));
                 }
             } else {
                 if (pageNum == 0 && page > 1) {
-                    object.withFooterText("Well, that sucked. You probably did something wrong.");
+                    object.append("Well, that sucked. You probably did something wrong.");
                 } else {
-                    object.withFooterText("Page 1 of 1");
+                    object.append("Page 1 of 1");
                 }
             }
         }
+        object.append("```");
     }
 }
