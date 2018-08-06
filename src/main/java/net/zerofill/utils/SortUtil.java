@@ -169,22 +169,14 @@ public class SortUtil implements Comparator {
                     System.out.println(e.getLocalizedMessage());
                 }
             } else if (o1 instanceof String && isIgnoreCase) {
-                System.out.println("String");
-                System.out.println("o1: " + o1);
-                System.out.println("o2: " + o2);
                 result = ((String) o1).compareToIgnoreCase((String) o2);
             } else {
-                System.out.println("Comparable");
-                System.out.println("o1: " + o1);
-                System.out.println("o2: " + o2);
                 result = ((Comparable) o1).compareTo(o2);
             }
         } else {
             if (isIgnoreCase) {
-                System.out.println("Ignore case");
                 result = o1.toString().compareToIgnoreCase(o2.toString());
             } else {
-                System.out.println("No Ignore case");
                 result = o1.toString().compareTo(o2.toString());
             }
         }
