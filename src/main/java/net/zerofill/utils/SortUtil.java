@@ -1,7 +1,9 @@
 package net.zerofill.utils;
 
+import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.List;
 
@@ -32,6 +34,8 @@ public class SortUtil implements Comparator {
     private boolean isAscending;
     private boolean isIgnoreCase;
     private boolean isNullsLast = true;
+
+    DateFormat format = new SimpleDateFormat("dd/MM/yy");
 
     /*
      *  The specified column will be sorted using default sort properties.
@@ -166,7 +170,13 @@ public class SortUtil implements Comparator {
                     Number p2 = NumberFormat.getNumberInstance(java.util.Locale.US).parse(o2.toString().substring(0, o2.toString().length() - 1));
                     result = p1.intValue() - p2.intValue();
                 } catch (ParseException e) {
-                    System.out.println(e.getLocalizedMessage());
+                    //System.out.println(e.getLocalizedMessage());
+                }
+            } else if (isDate(o1.toString())) {
+                try {
+                    result = (int) ((format.parse(o1.toString()).getTime() - format.parse(o2.toString()).getTime()) / (60 * 60 * 1000));
+                } catch (ParseException e) {
+                    //System.out.println(e.getLocalizedMessage());
                 }
             } else if (o1 instanceof String && isIgnoreCase) {
                 result = ((String) o1).compareToIgnoreCase((String) o2);
@@ -186,5 +196,15 @@ public class SortUtil implements Comparator {
         }
 
         return result;
+    }
+
+    private boolean isDate(String str) {
+        try {
+            format.parse(str);
+            return true;
+        } catch (ParseException e) {
+            //System.out.println(e.getLocalizedMessage());
+        }
+        return false;
     }
 }
