@@ -90,7 +90,7 @@ public class DivinePrideClient {
                 URIBuilder b = new URIBuilder(BASEURL);
                 b.setPath(API + actionParam + ((id != null) ? "/" + id : ""));
                 HttpResponse<JsonNode> results = apiCall(b.toString());
-                Class clazz = Class.forName("org.zerofill.divinepride.templates." + ENDPOINTMAP.get(action) + "Template");
+                Class clazz = Class.forName("net.zerofill.divinepride.templates." + ENDPOINTMAP.get(action) + "Template");
 
                 @SuppressWarnings("unchecked")
                 Method method = clazz.getMethod("apply", JsonNode.class);
