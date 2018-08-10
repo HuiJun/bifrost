@@ -152,6 +152,11 @@ public class NovaROMarket extends NovaROClient {
                 }
 
                 List<List<String>> results = extractData(xmlDocument);
+
+                if (refine > 0) {
+                    results = filterByRefine(results, refine, 1);
+                }
+
                 String pageTitle = getItemTitle(xmlDocument);
                 int pageNum = getPages(xmlDocument);
 
@@ -245,7 +250,7 @@ public class NovaROMarket extends NovaROClient {
 
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String expression = "//table[contains(@class, 'horizontal-table')]/tr";
+            String expression = "//table[contains(@class, 'nova-table')]/tr";
 
             NodeList nodes = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -283,7 +288,7 @@ public class NovaROMarket extends NovaROClient {
 
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String expression = "//table[contains(@class, 'horizontal-table')]/tbody/tr";
+            String expression = "//table[contains(@class, 'nova-table')]/tbody/tr";
             NodeList nodes = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
             for (int h = 0; h < nodes.getLength(); h++) {
                 List<String> data = new ArrayList<>();
@@ -342,7 +347,7 @@ public class NovaROMarket extends NovaROClient {
     static String getItemTitle(Document xmlDocument) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String title = "//span[contains(@class, 'tooltip')]/a";
+            String title = "//span[contains(@class, 'tooltipstered')]/a";
 
             Node node = (Node) xPath.compile(title).evaluate(xmlDocument, XPathConstants.NODE);
             if (node != null && node.getNodeName().equals("a")) {
@@ -389,12 +394,23 @@ public class NovaROMarket extends NovaROClient {
                 sb.append(' ');
                 sb.append(String.format("(%s)", item.get(3)));
 
-                object.append(String.format("%n%s%n", StringUtils.abbreviate(sb.toString(), 60)));
+                object.append(String.format("%n%s", StringUtils.abbreviate(sb.toString(), 60)));
                 count++;
                 currentId.append(item.get(0));
             }
         }
         return count;
+    }
+
+    static List<List<String>> filterByRefine(List<List<String>> items, int refine, int col) {
+        List<List<String>> filtered = new ArrayList<>();
+        for (List<String> item : items) {
+            if (item.size() > col + 1 && item.get(col).startsWith("+") && Integer.parseInt(item.get(col).substring(1)) >= refine) {
+                logger.debug("Removing item");
+                filtered.add(item);
+            }
+        }
+        return filtered;
     }
 
     static void addFooter(StringBuilder object, String command, int page, int pageNum) {

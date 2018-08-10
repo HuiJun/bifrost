@@ -5,6 +5,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public class SortUtil implements Comparator {
     private boolean isIgnoreCase;
     private boolean isNullsLast = true;
 
-    DateFormat format = new SimpleDateFormat("dd/MM/yy");
+    DateFormat format = new SimpleDateFormat("MM/dd/yy");
 
     /*
      *  The specified column will be sorted using default sort properties.
@@ -174,12 +175,12 @@ public class SortUtil implements Comparator {
                 }
             } else if (isDate(o1.toString())) {
                 try {
-                    result = (int) ((format.parse(o1.toString()).getTime() - format.parse(o2.toString()).getTime()) / (60 * 60 * 1000));
+                    result = format.parse(o1.toString()).compareTo(format.parse(o2.toString()));
                 } catch (ParseException e) {
                     //System.out.println(e.getLocalizedMessage());
                 }
             } else if (o1 instanceof String && isIgnoreCase) {
-                result = ((String) o1).compareToIgnoreCase((String) o2);
+                result = o1.toString().replaceAll("[^A-Za-z0-9]", "").compareToIgnoreCase(o2.toString().replaceAll("[^A-Za-z0-9]", ""));
             } else {
                 result = ((Comparable) o1).compareTo(o2);
             }

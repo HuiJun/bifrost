@@ -140,6 +140,10 @@ public class NovaROMarketHistory extends NovaROMarket {
 
                 List<List<String>> results = extractData(xmlDocument);
 
+                if (refine > 0) {
+                    results = filterByRefine(results, refine, 2);
+                }
+
                 String pageTitle = getItemTitle(xmlDocument);
                 int pageNum = getPages(xmlDocument);
 
