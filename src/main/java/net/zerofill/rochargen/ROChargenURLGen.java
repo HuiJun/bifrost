@@ -41,7 +41,7 @@ public class ROChargenURLGen {
         return generateSig(charName, bgID, posID);
     }
 
-    private static EmbedObject generateSig(String charName, int bgID, int posID) {
+    public static EmbedObject generateSig(String charName, int bgID, int posID) {
         try {
             URIBuilder b = new URIBuilder(String.format(SIGURL, encodeURIComponent(charName), bgID, posID));
             return buildEmbed(b.build());
@@ -57,7 +57,7 @@ public class ROChargenURLGen {
         return generateChar(charName, poseID, rotationID);
     }
 
-    private static EmbedObject generateChar(String charName, int poseID, int rotationID) {
+    public static EmbedObject generateChar(String charName, int poseID, int rotationID) {
         try {
             URIBuilder b = new URIBuilder(String.format(CHARURL, encodeURIComponent(charName), poseID, rotationID));
             return buildEmbed(b.build());
