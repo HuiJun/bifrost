@@ -27,10 +27,11 @@ public class ClearAttCommand implements Command {
             woe = "woe2";
         }
         if (woe != null) {
-            for (IRole role : event.getAuthor().getRolesForGuild(event.getGuild())) {
+            List<IRole> roles = event.getAuthor().getRolesForGuild(event.getGuild());
+            for (IRole role : roles) {
                 if (role.getName().equalsIgnoreCase(ConfigUtils.getString(String.format("roster.%s.admin", woe)))) {
                     try {
-                        BotUtils.sendMessage(event.getChannel(), ClearAtt.clear(woe));
+                        BotUtils.sendMessage(event.getChannel(), ClearAtt.clear(woe, roles));
                     } catch (IOException | GeneralSecurityException e) {
                         e.getStackTrace();
                     }

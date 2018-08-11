@@ -17,6 +17,8 @@ import net.zerofill.roster.Roster;
 import net.zerofill.utils.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sx.blah.discord.handle.impl.obj.Role;
+import sx.blah.discord.handle.obj.IRole;
 
 public class ClearAtt extends Roster {
 
@@ -24,7 +26,7 @@ public class ClearAtt extends Roster {
 
     private static final String APPLICATION_NAME = "Discord Bot";
 
-    public static String clear(String woe) throws IOException, GeneralSecurityException {
+    public static String clear(String woe, List<IRole> roles) throws IOException, GeneralSecurityException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         final String spreadsheetId = ConfigUtils.get(String.format("roster.%s.sid", woe));
         final String range = String.format("%1$s%2$s:%1$s100", ConfigUtils.get(String.format("roster.%s.attcol", woe)), ConfigUtils.get(String.format("roster.%s.startrow", woe)));
@@ -66,7 +68,7 @@ public class ClearAtt extends Roster {
                         }
                         StringBuilder message = new StringBuilder("Attendance cleared.");
                         message.append(String.format("%n"));
-                        message.append(remind(woe));
+                        message.append(remind(woe, roles));
                         return message.toString();
                     }
                 } catch (Exception e) {
@@ -77,7 +79,14 @@ public class ClearAtt extends Roster {
         return "Error. Please check the logs";
     }
 
-    private static String remind(String woe) {
-        return String.format("@%s please set your attendance for the coming war. Type the command %ssetatt <name> <yes/no> :sunglasses:", ConfigUtils.get(String.format("roster.%s.announce", woe)), ConfigUtils.getString("discord.bot.prefix"));
+    private static String remind(String woe, List<IRole> roles) {
+        String announce = ConfigUtils.getString(String.format("roster.%s.announce", woe));
+        IRole mention = null;
+        for(IRole role : roles) {
+            if (role.getName().equalsIgnoreCase(announce)) {
+                mention = role;
+            }
+        }
+        return String.format("%s, please set your attendance for the coming war. Type the command %ssetatt <name> <yes/no> :sunglasses:", mention != null ? mention.mention() : "@here", ConfigUtils.getString("discord.bot.prefix"));
     }
 }

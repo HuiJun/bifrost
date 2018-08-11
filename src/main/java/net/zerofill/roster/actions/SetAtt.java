@@ -19,7 +19,6 @@ import net.zerofill.roster.Roster;
 import net.zerofill.utils.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.security.krb5.Config;
 
 public class SetAtt extends Roster {
 
