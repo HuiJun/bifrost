@@ -347,7 +347,7 @@ public class NovaROMarket extends NovaROClient {
     static String getItemTitle(Document xmlDocument) {
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String title = "//span[contains(@class, 'tooltipstered')]/a";
+            String title = "//span[contains(@class, 'tooltip')]/a";
 
             Node node = (Node) xPath.compile(title).evaluate(xmlDocument, XPathConstants.NODE);
             if (node != null && node.getNodeName().equals("a")) {
