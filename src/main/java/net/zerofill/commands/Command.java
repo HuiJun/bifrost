@@ -22,7 +22,7 @@ public interface Command {
 
     static Map<String, String> getCached(Map<String, Map<String, String>> commandCache, String cacheKey, String itemName, int refine) {
         Map<String, String> result = new HashMap<>();
-        Integer pageNum = 1;
+        int pageNum = 1;
         StringBuilder parsedItemName = new StringBuilder();
 
         if (!refineCache.containsKey(cacheKey)) {

@@ -257,8 +257,7 @@ public class MonsterTemplate extends BaseTemplate {
     }
 
     private static float roundDecimal(float num) {
-        Float floatObj = num;
-        if (floatObj.isInfinite()) {
+        if (Float.isInfinite(num)) {
             return 0;
         }
         BigDecimal bd = new BigDecimal(Float.toString(num));

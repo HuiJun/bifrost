@@ -63,6 +63,12 @@ public class NovaROEvents {
         for (String format : formatted) {
             builder.append(format);
         }
+
+        List<String> specialFormatted = buildEventTable(specialEvents, longest);
+        for (String format : specialFormatted) {
+            builder.append(format);
+        }
+
         builder.append("```");
 
         eventResults.add(builder.toString());

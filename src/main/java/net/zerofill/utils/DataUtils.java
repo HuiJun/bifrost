@@ -50,19 +50,20 @@ public class DataUtils {
 
         if (resourceAsStream != null) {
             try (InputStreamReader isr = new InputStreamReader(resourceAsStream)) {
-                BufferedReader br = new BufferedReader(isr);
-                StringBuilder builder = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (!line.startsWith("#")) {
-                        builder.append(line
-                                .replaceAll("\\\\'", "''")
-                                .replaceAll("(tiny|small|medium)int", "int")
-                                .replaceAll("text NOT NULL", "varchar(50) NOT NULL DEFAULT ''")
-                        );
+                try (BufferedReader br = new BufferedReader(isr)) {
+                    StringBuilder builder = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        if (!line.startsWith("#")) {
+                            builder.append(line
+                                    .replaceAll("\\\\'", "''")
+                                    .replaceAll("(tiny|small|medium)int", "int")
+                                    .replaceAll("text NOT NULL", "varchar(50) NOT NULL DEFAULT ''")
+                            );
+                        }
                     }
+                    RunScript.execute(conn, new InputStreamReader(new ByteArrayInputStream(builder.toString().getBytes(StandardCharsets.UTF_8.name()))));
                 }
-                RunScript.execute(conn, new InputStreamReader(new ByteArrayInputStream(builder.toString().getBytes(StandardCharsets.UTF_8.name()))));
             } catch (Exception e) {
                 logger.debug(e.getLocalizedMessage());
             } finally {
