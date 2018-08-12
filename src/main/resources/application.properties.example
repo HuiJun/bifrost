@@ -30,6 +30,28 @@ novaro.user=
 novaro.pass=
 
 #################
+# Roster Config #
+#################
+roster.woe1.sid=
+roster.woe1.range=
+roster.woe1.namecol=
+roster.woe1.attcol=
+roster.woe1.startrow=
+roster.woe1.announce=
+roster.woe1.signup=
+roster.woe1.admin=
+roster.woe1.channel=
+roster.woe2.sid=
+roster.woe2.range=
+roster.woe2.namecol=
+roster.woe2.attcol=
+roster.woe2.startrow=
+roster.woe2.announce=
+roster.woe2.admin=
+roster.woe1.signup=
+roster.woe2.channel=
+
+#################
 # Shivtr Config #
 #################
 shivtr.url=
