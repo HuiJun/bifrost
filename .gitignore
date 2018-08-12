@@ -40,3 +40,4 @@ buildNumber.properties
 
 application.properties
 logback-test.xml
+credentials.json
