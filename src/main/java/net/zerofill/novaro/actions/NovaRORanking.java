@@ -11,8 +11,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.util.EmbedBuilder;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -35,8 +33,8 @@ public class NovaRORanking extends NovaROClient {
         ZENYRANKING.add(new BasicNameValuePair("action", "zeny"));
     }
 
-    public static synchronized List<EmbedObject> getZenyRanking() {
-        List<EmbedObject> resultList = new ArrayList<>();
+    public static synchronized List<String> getZenyRanking() {
+        List<String> resultList = new ArrayList<>();
 
         try {
             if (cookieStore.getCookies().isEmpty() || isCookieExpired()) {
@@ -82,10 +80,6 @@ public class NovaRORanking extends NovaROClient {
                                 mh.append(String.join("", Collections.nCopies(30 - mh.length(), " ")));
                                 mh.append("Zeny");
                                 mh.append(String.join("", Collections.nCopies(43 - mh.length(), " ")));
-                                //mh.append("Class");
-                                //mh.append(String.join("", Collections.nCopies(40 - mh.length(), " ")));
-                                //mh.append("Guild");
-                                //mh.append(String.join("", Collections.nCopies(55 - mh.length(), " ")));
                                 mh.append(String.format("%n"));
 
                                 padding = mh.length();
@@ -98,10 +92,6 @@ public class NovaRORanking extends NovaROClient {
                             mh.append(String.join("", Collections.nCopies(30 - mh.length() + padding, " ")));
                             mh.append(result.get(2));
                             mh.append(String.join("", Collections.nCopies(43 - mh.length() + padding, " ")));
-                            //mh.append(result.get(3));
-                            //mh.append(String.join("", Collections.nCopies(49 - mh.length() + padding, " ")));
-                            //mh.append(result.get(7));
-                            //mh.append(String.join("", Collections.nCopies(67 - mh.length() + padding, " ")));
                             mh.append(String.format("%n"));
 
                             mhu.append(mh.toString());
@@ -115,32 +105,31 @@ public class NovaRORanking extends NovaROClient {
                 logger.debug("MHU length: " + mhu.length());
 
                 if (mhu.length() > 0) {
-                    EmbedBuilder mhBuilder = new EmbedBuilder();
-                    mhBuilder.withColor(128, 0, 128);
-                    mhBuilder.withTitle("Zeny Rankings");
-                    mhBuilder.withDescription("```haskell");
-                    mhBuilder.appendDescription(String.format("%n"));
-                    mhBuilder.appendDescription(mhu.toString());
-                    mhBuilder.appendDescription("```");
-                    resultList.add(0, mhBuilder.build());
+                    StringBuilder mhBuilder = new StringBuilder();
+                    mhBuilder.append("Zeny Rankings");
+
+                    mhBuilder.append("```haskell");
+                    mhBuilder.append(String.format("%n"));
+                    mhBuilder.append(mhu.toString());
+                    mhBuilder.append("```");
+                    resultList.add(0, mhBuilder.toString());
                 }
 
             } else {
-                EmbedBuilder object = new EmbedBuilder();
-                object.withColor(128, 0, 128);
-                object.withTitle("Zeny Rankings");
+                StringBuilder object = new StringBuilder();
+                object.append("Zeny Rankings");
 
-                object.withDescription("```");
-                object.appendDescription(String.join("", Collections.nCopies(110, "-")));
-                object.appendDescription("```");
+                object.append("```");
+                object.append(String.join("", Collections.nCopies(110, "-")));
+                object.append("```");
 
-                object.appendDescription("```haskell");
-                object.appendDescription(String.format("%n"));
-                object.appendDescription(NO_RESULTS_MESSAGE);
-                object.appendDescription(String.format("%n"));
-                object.appendDescription("```");
+                object.append("```haskell");
+                object.append(String.format("%n"));
+                object.append(NO_RESULTS_MESSAGE);
+                object.append(String.format("%n"));
+                object.append("```");
 
-                resultList.add(object.build());
+                resultList.add(object.toString());
             }
 
         } catch (Exception e) {

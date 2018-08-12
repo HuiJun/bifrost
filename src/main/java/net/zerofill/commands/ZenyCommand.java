@@ -2,7 +2,6 @@ package net.zerofill.commands;
 
 import net.zerofill.novaro.actions.NovaRORanking;
 import net.zerofill.utils.BotUtils;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ public class ZenyCommand implements Command {
 
     @Override
     public void runCommand(MessageReceivedEvent event, List<String> args) {
-        for (EmbedObject response : NovaRORanking.getZenyRanking()) {
+        for (String response : NovaRORanking.getZenyRanking()) {
             BotUtils.sendMessage(event.getChannel(), response);
         }
     }

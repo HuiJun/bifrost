@@ -26,9 +26,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
 
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.util.EmbedBuilder;
-
 public class NovaROMarket extends NovaROClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NovaROMarket.class);
