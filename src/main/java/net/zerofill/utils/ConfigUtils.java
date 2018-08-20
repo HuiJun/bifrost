@@ -2,6 +2,8 @@ package net.zerofill.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -41,6 +43,13 @@ public class ConfigUtils {
             init();
         }
         return ConfigUtils.properties.getProperty(key);
+    }
+
+    public static List<String> getList(String key) {
+        if (ConfigUtils.properties.isEmpty()) {
+            init();
+        }
+        return Arrays.asList(ConfigUtils.properties.getProperty(key).split(","));
     }
 
     public static int getInt(String key) {

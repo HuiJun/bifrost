@@ -1,7 +1,10 @@
 package net.zerofill;
 
+import net.zerofill.cronrunner.CronRunner;
 import net.zerofill.utils.BotUtils;
 import net.zerofill.utils.ConfigUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.IDiscordClient;
 
 import net.zerofill.utils.DataUtils;
@@ -10,6 +13,8 @@ import sx.blah.discord.handle.obj.StatusType;
 import sx.blah.discord.util.Image;
 
 public class MainRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainRunner.class);
 
     public static void main(String[] args){
         String token;
@@ -42,6 +47,8 @@ public class MainRunner {
         });
 
         client.login();
+        CronRunner cr = new CronRunner();
+        cr.run();
     }
 
 }

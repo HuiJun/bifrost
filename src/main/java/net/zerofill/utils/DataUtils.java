@@ -111,14 +111,15 @@ public class DataUtils {
             for (int i = 0; i < ids.size(); i++) {
                 selectPreparedStatement.setInt(i + 1, ids.get(i));
             }
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("id", rs.getInt("id"));
-                result.put("name", rs.getString("name_japanese"));
-                result.put("aegisName", rs.getString("name_english"));
-                result.put("slots", rs.getInt("slots"));
-                results.put(rs.getInt("id"), result);
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", rs.getInt("id"));
+                    result.put("name", rs.getString("name_japanese"));
+                    result.put("aegisName", rs.getString("name_english"));
+                    result.put("slots", rs.getInt("slots"));
+                    results.put(rs.getInt("id"), result);
+                }
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
@@ -145,9 +146,10 @@ public class DataUtils {
             selectPreparedStatement.setString(1, String.format("%%%s%%", name.toLowerCase()));
             selectPreparedStatement.setString(2, String.format("%%%s%%", name.toLowerCase()));
 
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            while (rs.next()) {
-                results.add(rs.getInt("ID"));
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    results.add(rs.getInt("ID"));
+                }
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
@@ -171,16 +173,17 @@ public class DataUtils {
 
         try {
             selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("id", rs.getInt("id"));
-                result.put("name", rs.getString("name"));
-                result.put("schedule", rs.getString("schedule"));
-                result.put("start", rs.getTimestamp("start"));
-                result.put("end", rs.getTimestamp("end"));
-                result.put("duration", rs.getLong("duration"));
-                results.add(result);
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", rs.getInt("id"));
+                    result.put("name", rs.getString("name"));
+                    result.put("schedule", rs.getString("schedule"));
+                    result.put("start", rs.getTimestamp("start"));
+                    result.put("end", rs.getTimestamp("end"));
+                    result.put("duration", rs.getLong("duration"));
+                    results.add(result);
+                }
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
