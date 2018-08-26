@@ -14,5 +14,5 @@ public class Reminder implements Job {
     public void execute(JobExecutionContext context) {
     }
 
-    private Reminder() {}
+    public Reminder() {}
 }
