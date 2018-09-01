@@ -296,6 +296,17 @@ public class NovaROMarket extends NovaROClient {
                             Node node = nodes.item(h).getChildNodes().item(i).getChildNodes().item(j);
                             switch (node.getNodeName()) {
 
+                                case "div":
+                                    String childSpanValue = node.getFirstChild().getFirstChild().getNodeValue().trim();
+                                    for (int k = 0; k < node.getFirstChild().getAttributes().getLength(); k++) {
+                                        Node attr = node.getFirstChild().getAttributes().item(k);
+                                        if (attr.getNodeName().equals("data-clipboard-text")) {
+                                            childSpanValue = attr.getNodeValue().trim();
+                                        }
+                                    }
+                                    tableCell.append(childSpanValue);
+                                    break;
+
                                 case "span":
                                     String spanValue = node.getFirstChild().getNodeValue().trim();
                                     for (int k = 0; k < node.getAttributes().getLength(); k++) {
