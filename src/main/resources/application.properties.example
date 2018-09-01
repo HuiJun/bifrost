@@ -63,3 +63,16 @@ shivtr.pass=
 ##################
 bifrost.python=
 bifrost.mvpbot.location=
+
+###################
+# Reminder Config #
+###################
+reminder.ids=
+reminder.before=
+
+####################
+# Quartz Scheduler #
+####################
+org.quartz.scheduler.instanceName=MyScheduler
+org.quartz.threadPool.threadCount=3
+org.quartz.jobStore.class=org.quartz.simpl.RAMJobStore

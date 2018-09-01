@@ -68,7 +68,6 @@ public class Roster {
         try (InputStreamReader isr = new InputStreamReader(in)) {
             GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, isr);
 
-
             // Build flow and trigger user authorization request.
             flow = new GoogleAuthorizationCodeFlow.Builder(
                     HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
