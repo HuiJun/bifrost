@@ -22,6 +22,10 @@ rochargen.pos.max=
 # DivinePride Config #
 ######################
 divinepride.apiKey=
+divinepride.baseexp=
+divinepride.jobexp=
+divinepride.drop=
+divinepride.limit=
 
 ########################
 # NovaRO Market Config #

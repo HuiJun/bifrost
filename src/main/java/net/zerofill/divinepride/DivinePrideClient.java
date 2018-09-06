@@ -33,6 +33,8 @@ public class DivinePrideClient {
     private static final Logger logger = LoggerFactory.getLogger(DivinePrideClient.class);
 
     public static final String DIVINE_PRIDE_API_KEY = ConfigUtils.get("divinepride.apiKey");
+    public static final int DIVINE_PRIDE_RESULT_LIMIT = Integer.parseInt(ConfigUtils.get("divinepride.limit"));
+
     public static final String BASEURL = "https://www.divine-pride.net/";
 
     public static final String API = "api/database/";
@@ -85,7 +87,9 @@ public class DivinePrideClient {
     public static synchronized List<EmbedObject> getById(String action, List<String> ids) {
         String actionParam = ENDPOINTMAP.get(action).toLowerCase();
         List<EmbedObject> resultList = new ArrayList<>();
-        for (String id : ids) {
+        for (int i = 0; i < ids.size() && i < DIVINE_PRIDE_RESULT_LIMIT; i++) {
+            String id = ids.get(i);
+
             try {
                 URIBuilder b = new URIBuilder(BASEURL);
                 b.setPath(API + actionParam + ((id != null) ? "/" + id : ""));
@@ -120,7 +124,7 @@ public class DivinePrideClient {
         List<String> result = new ArrayList<>();
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
-            String expression = "//table/tbody/tr/td/span/a/@href";
+            String expression = "//table/tbody/tr/td//a/@href";
             NodeList nodes = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
             for (int i = 0; i < nodes.getLength(); i++) {
                 result.add(extractIDString(nodes.item(i).getNodeValue()));

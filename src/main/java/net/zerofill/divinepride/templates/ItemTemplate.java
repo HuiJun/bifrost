@@ -25,7 +25,7 @@ public class ItemTemplate extends BaseTemplate {
 
         builder.withColor(0, 0, 255);
 
-        String thumbnail = String.format("http://divine-pride.net/img/items/collection/iRO/%d", root.getInt("id"));
+        String thumbnail = String.format("https://static.divine-pride.net/images/items/collection/%d.png", root.getInt("id"));
         if (isCard(root)) {
             thumbnail = String.format("https://static.divine-pride.net/images/items/cards/%d.png", root.getInt("id"));
         }
@@ -41,7 +41,7 @@ public class ItemTemplate extends BaseTemplate {
         builder.appendField("Description", clean(root.getString("description")), false);
 
         builder.withFooterText(root.optString("aegisName"));
-        builder.withFooterIcon(String.format("http://www.divine-pride.net/img/items/item/iRO/%d", root.getInt("id")));
+        builder.withFooterIcon(String.format("https://static.divine-pride.net/images/items/item/%d.png", root.getInt("id")));
 
         return builder;
     }
