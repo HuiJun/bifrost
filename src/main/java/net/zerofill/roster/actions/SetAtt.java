@@ -69,9 +69,9 @@ public class SetAtt extends Roster {
                         atts.add(i, new ArrayList<>());
                     }
 
-                    if (row.get(0).toString().toLowerCase().startsWith(name.toLowerCase())) {
+                    if (row.get(0) != null && row.get(0).toString().toLowerCase().startsWith(name.toLowerCase())) {
 
-                        if (atts == null || atts.get(i) == null || atts.get(i).isEmpty()) {
+                        if (atts.get(i) == null || atts.get(i).isEmpty()) {
                             atts.get(i).add(0, capitalize(val));
                         } else {
                             atts.get(i).set(0, capitalize(val));

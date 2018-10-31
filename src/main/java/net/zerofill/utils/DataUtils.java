@@ -161,26 +161,38 @@ public class DataUtils {
     }
 
     public static List<Map<String, Object>> getEvents() {
+        return getEvents(null);
+    }
+
+    public static List<Map<String, Object>> getEvents(String eventId) {
         List<Map<String, Object>> results = new ArrayList<>();
         getConn();
 
         StringBuilder selectQuery = new StringBuilder();
         PreparedStatement selectPreparedStatement = null;
 
-        selectQuery.append("SELECT id, name, schedule, start, end, duration FROM event_db WHERE start < NOW() AND (end > NOW() OR end IS NULL)");
+        selectQuery.append("SELECT id, name, schedule, start, end, duration FROM event_db WHERE (start < NOW() AND (end > NOW() OR end IS NULL))");
+
+        if (eventId != null) {
+            selectQuery.append(" AND id = ?");
+        }
 
         try {
             selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("id", rs.getInt("id"));
-                result.put("name", rs.getString("name"));
-                result.put("schedule", rs.getString("schedule"));
-                result.put("start", rs.getTimestamp("start"));
-                result.put("end", rs.getTimestamp("end"));
-                result.put("duration", rs.getLong("duration"));
-                results.add(result);
+            if (eventId != null) {
+                selectPreparedStatement.setString(1, eventId);
+            }
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", rs.getInt("id"));
+                    result.put("name", rs.getString("name"));
+                    result.put("schedule", rs.getString("schedule"));
+                    result.put("start", rs.getTimestamp("start"));
+                    result.put("end", rs.getTimestamp("end"));
+                    result.put("duration", rs.getLong("duration"));
+                    results.add(result);
+                }
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
