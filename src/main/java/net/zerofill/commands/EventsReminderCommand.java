@@ -52,7 +52,7 @@ public class EventsReminderCommand implements Command {
                     BotUtils.assignRole(event, role);
                     results.add(String.format("%s assigned role %s for reminders", event.getAuthor().mention(true), role.getName()));
                 } else {
-                    results.add("What is it that you want me to do?");
+                    BotUtils.removeRole(event, role);
                 }
                 break;
         }
