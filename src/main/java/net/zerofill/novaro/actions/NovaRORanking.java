@@ -2,6 +2,9 @@ package net.zerofill.novaro.actions;
 
 import com.mashape.unirest.http.HttpResponse;
 import net.zerofill.novaro.NovaROClient;
+import net.zerofill.novaro.actions.templates.BaseParser;
+import net.zerofill.novaro.actions.templates.GuildRankingParser;
+import net.zerofill.novaro.actions.templates.ZenyRankingParser;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -26,14 +29,27 @@ public class NovaRORanking extends NovaROClient {
     private static final Logger logger = LoggerFactory.getLogger(NovaRORanking.class);
 
     private static final List<NameValuePair> ZENYRANKING;
+    private static final List<NameValuePair> GUILDRANKING;
 
     static {
         ZENYRANKING = new ArrayList<>();
-        ZENYRANKING.add(new BasicNameValuePair("module", "ranking"));
-        ZENYRANKING.add(new BasicNameValuePair("action", "zeny"));
+        ZENYRANKING.add(0, new BasicNameValuePair("module", "ranking"));
+        ZENYRANKING.add(1, new BasicNameValuePair("action", "zeny"));
+
+        GUILDRANKING = new ArrayList<>();
+        GUILDRANKING.add(0, new BasicNameValuePair("module", "ranking"));
+        GUILDRANKING.add(1, new BasicNameValuePair("action", "guild"));
     }
 
     public static synchronized List<String> getZenyRanking() {
+        return getRanking(ZENYRANKING, new ZenyRankingParser());
+    }
+
+    public static synchronized List<String> getGuildRanking() {
+        return getRanking(GUILDRANKING, new GuildRankingParser());
+    }
+
+    public static synchronized List<String> getRanking(List<NameValuePair> nvp, BaseParser parser) {
         List<String> resultList = new ArrayList<>();
 
         try {
@@ -43,7 +59,7 @@ public class NovaRORanking extends NovaROClient {
 
             URIBuilder b = new URIBuilder(BASEURL);
 
-            List<NameValuePair> zenyRank = new ArrayList<>(ZENYRANKING);
+            List<NameValuePair> zenyRank = new ArrayList<>(nvp);
             b.addParameters(zenyRank);
             HttpResponse<String> zenyResult = getHTML(b.toString());
 
@@ -62,62 +78,31 @@ public class NovaRORanking extends NovaROClient {
 
             List<List<String>> results = extractData(xmlDocument);
 
+            String action = Character.toUpperCase(nvp.get(1).getValue().charAt(0)) + nvp.get(1).getValue().substring(1);
+
             if (!results.isEmpty()) {
 
-                StringBuilder mhu = new StringBuilder();
-                boolean mhh = false;
-                for (List<String> result : results) {
-                    switch (result.size()) {
-                        case 7:
-                        case 8:
-                            StringBuilder mh = new StringBuilder();
+                String mhu = parser.execute(results);
 
-                            int padding = 0;
-                            if (!mhh) {
-                                mh.append("Rank");
-                                mh.append(String.join("", Collections.nCopies(6 - mh.length(), " ")));
-                                mh.append("Name");
-                                mh.append(String.join("", Collections.nCopies(30 - mh.length(), " ")));
-                                mh.append("Zeny");
-                                mh.append(String.join("", Collections.nCopies(43 - mh.length(), " ")));
-                                mh.append(String.format("%n"));
-
-                                padding = mh.length();
-                                mhh = true;
-                            }
-
-                            mh.append(result.get(0));
-                            mh.append(String.join("", Collections.nCopies(6 - mh.length() + padding, " ")));
-                            mh.append(result.get(1));
-                            mh.append(String.join("", Collections.nCopies(30 - mh.length() + padding, " ")));
-                            mh.append(result.get(2));
-                            mh.append(String.join("", Collections.nCopies(43 - mh.length() + padding, " ")));
-                            mh.append(String.format("%n"));
-
-                            mhu.append(mh.toString());
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-
-                logger.debug("MHU length: " + mhu.length());
+                logger.debug(String.format("MHU length: %d", mhu.length()));
 
                 if (mhu.length() > 0) {
                     StringBuilder mhBuilder = new StringBuilder();
-                    mhBuilder.append("Zeny Rankings");
+                    mhBuilder.append(action);
+                    mhBuilder.append(" Rankings");
 
                     mhBuilder.append("```haskell");
                     mhBuilder.append(String.format("%n"));
-                    mhBuilder.append(mhu.toString());
+                    mhBuilder.append(mhu);
                     mhBuilder.append("```");
                     resultList.add(0, mhBuilder.toString());
                 }
 
             } else {
                 StringBuilder object = new StringBuilder();
-                object.append("Zeny Rankings");
+
+                object.append(action);
+                object.append(" Rankings");
 
                 object.append("```");
                 object.append(String.join("", Collections.nCopies(110, "-")));

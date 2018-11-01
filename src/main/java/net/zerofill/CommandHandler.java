@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.zerofill.commands.GuildRankingCommand;
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IMessage;
@@ -55,6 +56,7 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
         commandMap.put("avatar", new AvatarCommand());
         commandMap.put("char", new CharCommand());
         commandMap.put("clearatt", new ClearAttCommand());
+        commandMap.put("guildranking", new GuildRankingCommand());
         commandMap.put("head", new HeadCommand());
         commandMap.put("events", new EventsCommand());
         commandMap.put("help", new HelpCommand());
