@@ -61,6 +61,10 @@ public class SetAtt extends Roster {
                 for (int i = 0; i < names.size(); i++) {
                     List<Object> row = names.get(i);
 
+                    if (row == null || row.isEmpty()) {
+                        continue;
+                    }
+
                     if (atts == null) {
                         atts = new ArrayList<>();
                     }
