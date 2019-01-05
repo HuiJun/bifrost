@@ -201,6 +201,36 @@ public class DataUtils {
             if (logger.isDebugEnabled()) {
                 logger.debug(e.getLocalizedMessage());
             }
+        }
+
+        return results;
+    }
+
+    public static List<Map<String, Object>> getWeapons(Integer... args) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        getConn();
+
+        StringBuilder selectQuery = new StringBuilder();
+        PreparedStatement selectPreparedStatement = null;
+
+        selectQuery.append("SELECT id, name_japanese, weapon_level FROM items_db_re WHERE item_type = 5");
+
+        try {
+            if (args != null && args.length > 0) {
+                selectQuery.append(" AND id IN (?)");
+                Array array = conn.createArrayOf("SMALLINT", args);
+                selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+                selectPreparedStatement.setArray(1, array);
+            } else {
+                selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+            }
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                results = parseResults(rs);
+            }
+        } catch (SQLException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
         } finally {
             close(selectPreparedStatement);
         }
