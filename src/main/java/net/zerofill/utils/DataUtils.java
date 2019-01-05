@@ -47,11 +47,7 @@ public class DataUtils {
             urls.add(new URL(ConfigUtils.get("rathena.db.mob")));
 
             for (URL url : urls) {
-                try (BufferedInputStream in = new BufferedInputStream(url.openStream())) {
-                    load(in);
-                } catch (IOException ioe) {
-                    logger.debug(ioe.getLocalizedMessage());
-                }
+                loadUrl(url);
             }
         } catch (MalformedURLException mue) {
             logger.debug(mue.getLocalizedMessage());
@@ -62,6 +58,14 @@ public class DataUtils {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             InputStream resourceAsStream = classLoader.getResourceAsStream(sqlFile);
             load(resourceAsStream);
+        }
+    }
+
+    public static void loadUrl(URL url) {
+        try (BufferedInputStream in = new BufferedInputStream(url.openStream())) {
+            load(in);
+        } catch (IOException ioe) {
+            logger.debug(ioe.getLocalizedMessage());
         }
     }
 
