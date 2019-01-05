@@ -1,15 +1,20 @@
 package net.zerofill.utils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,11 +31,9 @@ public class DataUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DataUtils.class);
 
-    private static final String DB_DRIVER = "org.h2.Driver";
-    private static final String DB_CONNECTION = "jdbc:h2:./bifrost;MODE=MySQL";
+    public static final String DB_DRIVER = "org.h2.Driver";
+    public static final String DB_CONNECTION = "jdbc:h2:./bifrost;MODE=MySQL";
     private static final List<String> sqlFiles = new ArrayList<>(Arrays.asList(
-            "data/item_db_re.sql",
-            "data/mob_db_re.sql",
             "data/event_db.sql",
             "data/bifrost_db.sql"
     ));
@@ -38,18 +41,34 @@ public class DataUtils {
     private static Connection conn = null;
 
     public static void loadAll() {
+        try {
+            List<URL> urls = new ArrayList<>();
+            urls.add(new URL(ConfigUtils.get("rathena.db.weapon")));
+            urls.add(new URL(ConfigUtils.get("rathena.db.mob")));
+
+            for (URL url : urls) {
+                try (BufferedInputStream in = new BufferedInputStream(url.openStream())) {
+                    load(in);
+                } catch (IOException ioe) {
+                    logger.debug(ioe.getLocalizedMessage());
+                }
+            }
+        } catch (MalformedURLException mue) {
+            logger.debug(mue.getLocalizedMessage());
+        }
+
+
         for (String sqlFile : sqlFiles) {
-            load(sqlFile);
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            InputStream resourceAsStream = classLoader.getResourceAsStream(sqlFile);
+            load(resourceAsStream);
         }
     }
 
-    public static void load(String fileName) {
+    public static void load(InputStream file) {
         getConn();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream resourceAsStream = classLoader.getResourceAsStream(fileName);
-
-        if (resourceAsStream != null) {
-            try (InputStreamReader isr = new InputStreamReader(resourceAsStream)) {
+        if (file != null) {
+            try (InputStreamReader isr = new InputStreamReader(file)) {
                 try (BufferedReader br = new BufferedReader(isr)) {
                     StringBuilder builder = new StringBuilder();
                     String line;
@@ -58,6 +77,7 @@ public class DataUtils {
                             builder.append(line
                                     .replaceAll("\\\\'", "''")
                                     .replaceAll("(tiny|small|medium)int", "int")
+                                    .replaceAll("atk:matk", "atkmatk")
                                     .replaceAll("text NOT NULL", "varchar(50) NOT NULL DEFAULT ''")
                             );
                         }
@@ -68,7 +88,7 @@ public class DataUtils {
                 logger.debug(e.getLocalizedMessage());
             } finally {
                 try {
-                    resourceAsStream.close();
+                    file.close();
                 } catch (IOException e) {
                     logger.debug(e.getLocalizedMessage());
                 }
@@ -80,7 +100,7 @@ public class DataUtils {
         }
     }
 
-    private static void getConn() {
+    private static Connection getConn() {
         try {
             if (conn == null || conn.isClosed()) {
                 Class.forName(DB_DRIVER);
@@ -91,6 +111,7 @@ public class DataUtils {
                 logger.debug(e.getMessage());
             }
         }
+        return conn;
     }
 
     public static Map<Integer, Map<String, Object>> getItemsByIDs(List<Integer> ids) {
@@ -104,28 +125,25 @@ public class DataUtils {
         }
         selectQuery.deleteCharAt(selectQuery.length() - 1);
         selectQuery.append(")");
-        PreparedStatement selectPreparedStatement = null;
 
-        try {
-            selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+        try (PreparedStatement selectPreparedStatement = conn.prepareStatement(selectQuery.toString())) {
             for (int i = 0; i < ids.size(); i++) {
                 selectPreparedStatement.setInt(i + 1, ids.get(i));
             }
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            while (rs.next()) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("id", rs.getInt("id"));
-                result.put("name", rs.getString("name_japanese"));
-                result.put("aegisName", rs.getString("name_english"));
-                result.put("slots", rs.getInt("slots"));
-                results.put(rs.getInt("id"), result);
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("id", rs.getInt("id"));
+                    result.put("name", rs.getString("name_japanese"));
+                    result.put("aegisName", rs.getString("name_english"));
+                    result.put("slots", rs.getInt("slots"));
+                    results.put(rs.getInt("id"), result);
+                }
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(e.getLocalizedMessage());
             }
-        } finally {
-            close(selectPreparedStatement);
         }
 
         return results;
@@ -135,26 +153,22 @@ public class DataUtils {
         List<Integer> results = new ArrayList<>();
         getConn();
 
-        PreparedStatement selectPreparedStatement = null;
-
         StringBuilder selectQuery = new StringBuilder();
         selectQuery.append("SELECT ID FROM mob_db_re WHERE LOWER(kName) LIKE ? OR LOWER(iName) LIKE ?");
 
-        try {
-            selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+        try (PreparedStatement selectPreparedStatement = conn.prepareStatement(selectQuery.toString())) {
             selectPreparedStatement.setString(1, String.format("%%%s%%", name.toLowerCase()));
             selectPreparedStatement.setString(2, String.format("%%%s%%", name.toLowerCase()));
 
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            while (rs.next()) {
-                results.add(rs.getInt("ID"));
+            try (ResultSet rs = selectPreparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    results.add(rs.getInt("ID"));
+                }
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(e.getLocalizedMessage());
             }
-        } finally {
-            close(selectPreparedStatement);
         }
 
         return results;
@@ -169,7 +183,6 @@ public class DataUtils {
         getConn();
 
         StringBuilder selectQuery = new StringBuilder();
-        PreparedStatement selectPreparedStatement = null;
 
         selectQuery.append("SELECT id, name, schedule, start, end, duration FROM event_db WHERE (start < NOW() AND (end > NOW() OR end IS NULL))");
 
@@ -177,22 +190,12 @@ public class DataUtils {
             selectQuery.append(" AND id = ?");
         }
 
-        try {
-            selectPreparedStatement = conn.prepareStatement(selectQuery.toString());
+        try (PreparedStatement selectPreparedStatement = conn.prepareStatement(selectQuery.toString())) {
             if (eventId != null) {
                 selectPreparedStatement.setString(1, eventId);
             }
             try (ResultSet rs = selectPreparedStatement.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("id", rs.getInt("id"));
-                    result.put("name", rs.getString("name"));
-                    result.put("schedule", rs.getString("schedule"));
-                    result.put("start", rs.getTimestamp("start"));
-                    result.put("end", rs.getTimestamp("end"));
-                    result.put("duration", rs.getLong("duration"));
-                    results.add(result);
-                }
+                results = parseResults(rs);
             }
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
@@ -202,6 +205,21 @@ public class DataUtils {
             close(selectPreparedStatement);
         }
 
+        return results;
+    }
+
+    public static List<Map<String, Object>> parseResults(ResultSet resultSet) throws SQLException {
+        List<Map<String, Object>> results = new ArrayList<>();
+        ResultSetMetaData metaData = resultSet.getMetaData();
+
+        while (resultSet.next()) {
+            Map<String, Object> result = new HashMap<>();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                String name = metaData.getColumnName(i);
+                result.put(name.toLowerCase(), resultSet.getObject(name));
+            }
+            results.add(result);
+        }
         return results;
     }
 

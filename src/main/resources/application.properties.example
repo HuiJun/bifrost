@@ -29,6 +29,12 @@ divinepride.drop=
 divinepride.limit=
 
 ########################
+# Rathena DB Locations #
+########################
+rathena.db.weapon=https://raw.githubusercontent.com/rathena/rathena/master/sql-files/item_db_re.sql
+rathena.db.mob=https://raw.githubusercontent.com/rathena/rathena/master/sql-files/mob_db_re.sql
+
+########################
 # NovaRO Market Config #
 ########################
 novaro.user=
