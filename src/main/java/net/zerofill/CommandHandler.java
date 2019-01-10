@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import net.zerofill.commands.GuildRankingCommand;
+import net.zerofill.commands.RefineCommand;
+import net.zerofill.commands.ShowWeaponCommand;
 import sx.blah.discord.api.events.IListener;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IMessage;
@@ -65,8 +67,10 @@ public class CommandHandler implements IListener<MessageReceivedEvent> {
         commandMap.put("mi", new MiCommand());
         commandMap.put("pc", new PcCommand());
         commandMap.put("pvm", new PvmCommand());
+        commandMap.put("refine", new RefineCommand());
         commandMap.put("remind", new EventsReminderCommand());
         commandMap.put("setatt", new SetAttCommand());
+        commandMap.put("show", new ShowWeaponCommand());
         commandMap.put("sig", new SigCommand());
         commandMap.put("ws", new WsCommand());
         commandMap.put("zeny", new ZenyCommand());
