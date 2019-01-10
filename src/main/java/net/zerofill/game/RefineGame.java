@@ -99,7 +99,7 @@ public class RefineGame {
 
         StringBuilder status = new StringBuilder();
 
-        if (chance > (100 - success)) {
+        if (chance >= (100 - success)) {
             if (safe) {
                 success = refineList.get(refine + 1);
                 while (100 - success == 0) {
@@ -110,7 +110,7 @@ public class RefineGame {
                 refine++;
             }
             weapon.setRefine(refine);
-            status.append(String.format("Put on +%d %s", refine, weapon.getName()));
+            status.append(String.format("Put on +%d %s (Level %d)", refine, weapon.getName(), weapon.getLevel()));
         } else {
             if (refine < 10) {
                 GameRepository.deleteWeapon(weapon.getId());
